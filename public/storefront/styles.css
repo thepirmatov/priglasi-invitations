@@ -272,6 +272,83 @@ h2 {
   font-family: inherit;
 }
 
+.wizard-step input[type='file'] {
+  font-size: 0.85rem;
+  color: #6b5d52;
+}
+
+.photo-upload-status {
+  font-size: 0.8rem;
+  color: #8a6d5c;
+  margin: 0.25rem 0 0;
+  min-height: 1em;
+}
+
+.photo-preview-wrap {
+  position: relative;
+  margin-top: 0.5rem;
+  width: 140px;
+}
+
+.photo-preview-wrap.hidden {
+  display: none;
+}
+
+.photo-preview {
+  display: block;
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.photo-preview-remove {
+  margin-top: 0.4rem;
+  border: none;
+  background: none;
+  color: #b5432a;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.collage-preview-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.collage-preview-item {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.collage-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.collage-preview-item button {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: #b5432a;
+  color: #fff;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .schedule-row {
   display: flex;
   gap: 0.5rem;

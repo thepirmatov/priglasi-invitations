@@ -39,6 +39,7 @@ section {
 }
 
 .hero.has-photo {
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6)), var(--hero-photo-url);
   margin: 0 -1.5rem;
   padding: 5rem 1.5rem 3rem;
   border-bottom: none;

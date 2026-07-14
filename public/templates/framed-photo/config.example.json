@@ -1,0 +1,30 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Акылтай & Толкун",
+  "date": "2026-07-30",
+  "time": "17:00",
+  "venueName": "«ARNA»",
+  "venueAddress": "Курманжан Датка көчөсү, 152, Бишкек ш.",
+  "mapUrl": "https://2gis.kg/bishkek/geo/70000001112761356",
+  "schedule": [
+    { "time": "16:00", "label": "Коноктордун келиши" },
+    { "time": "17:00", "label": "Тойдун башталышы" },
+    { "time": "22:00", "label": "Тойдун бүтүшү" }
+  ],
+  "dressCode": "Кечки стиль",
+  "hostsNames": "Өмүрбек & Роза",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "photos/hero.jpg",
+  "collagePhotos": [
+    "photos/collage-1.jpg",
+    "photos/collage-2.jpg",
+    "photos/collage-3.jpg",
+    "photos/collage-4.jpg"
+  ],
+  "colorTheme": {
+    "primary": "#4a4238",
+    "accent": "#b89c7c",
+    "background": "#f4efe8"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

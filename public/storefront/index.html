@@ -49,8 +49,14 @@
           <h2>Аты-жөнү</h2>
           <label>Аты-жөнү (мис. Азамат & Жасмина)</label>
           <input type="text" id="field-coupleNames" />
-          <label>Аты-жөнүнүн артындагы сүрөт (шилтеме, милдеттүү эмес)</label>
-          <input type="text" id="field-heroPhotoUrl" placeholder="https://..." />
+          <label>Аты-жөнүнүн артындагы сүрөт (милдеттүү эмес)</label>
+          <input type="file" id="field-heroPhoto-file" accept="image/*" />
+          <input type="hidden" id="field-heroPhotoUrl" />
+          <div id="heroPhoto-preview-wrap" class="photo-preview-wrap hidden">
+            <img id="heroPhoto-preview" class="photo-preview" alt="Тандалган сүрөт" />
+            <button type="button" id="heroPhoto-remove" class="photo-preview-remove">Өчүрүү</button>
+          </div>
+          <p id="heroPhoto-status" class="photo-upload-status"></p>
         </div>
 
         <div class="wizard-step" data-step="1">
@@ -83,12 +89,22 @@
         </div>
 
         <div class="wizard-step" data-step="5">
+          <h2>Кошумча</h2>
+          <label>Тойдун ээлери (ата-энелер, милдеттүү эмес)</label>
+          <input type="text" id="field-hostsNames" placeholder="Мис. Өмүрбек & Роза" />
+          <label>Сүрөттөр жыйнагы (бир нече сүрөт, милдеттүү эмес)</label>
+          <input type="file" id="field-collagePhotos-file" accept="image/*" multiple />
+          <div id="collagePhotos-preview-wrap" class="collage-preview-wrap"></div>
+          <p id="collagePhotos-status" class="photo-upload-status"></p>
+        </div>
+
+        <div class="wizard-step" data-step="6">
           <h2>Музыка</h2>
           <label>Ырдын шилтемеси (же четке кийин бизге түздөн-түз жөнөтөсүз)</label>
           <input type="text" id="field-musicUrl" placeholder="https://..." />
         </div>
 
-        <div class="wizard-step" data-step="6">
+        <div class="wizard-step" data-step="7">
           <h2>Байланыш маалыматы</h2>
           <label>Сиздин атыңыз</label>
           <input type="text" id="field-customerName" />

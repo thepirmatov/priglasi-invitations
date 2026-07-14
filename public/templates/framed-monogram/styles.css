@@ -1,0 +1,460 @@
+:root {
+  --color-primary: #4a4238;
+  --color-accent: #b89c7c;
+  --color-background: #ece5da;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--color-primary);
+  background: var(--color-background);
+  line-height: 1.6;
+}
+
+.frame {
+  max-width: 500px;
+  margin: 20px auto;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  border: 12px solid #fff;
+  border-radius: 5px;
+  position: relative;
+}
+
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 2px solid var(--color-accent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .frame {
+    margin: 0 auto;
+    border-width: 6px;
+  }
+  .frame::after {
+    inset: 5px;
+  }
+}
+
+main {
+  position: relative;
+}
+
+section {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.ornament {
+  font-size: 1.3rem;
+  color: var(--color-accent);
+  opacity: 0.7;
+  margin-bottom: 0.75rem;
+}
+
+h2 {
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  color: var(--color-accent);
+  font-weight: 700;
+  margin: 0 0 1.25rem;
+}
+
+/* --- Hero: monogram over a photo, heavy text-shadow instead of a gradient
+   overlay (the photo stays fully visible, unlike the white/dark fade used
+   by the other photo-hero templates) --- */
+
+.hero {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  padding: 3.5rem 1.5rem 2.5rem;
+  background-size: cover;
+  background-position: center;
+  background-color: #ddd;
+}
+
+.hero.has-photo {
+  background-image: var(--hero-photo-url);
+}
+
+.monogram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.monogram-letters {
+  font-family: 'Marck Script', cursive;
+  font-weight: 400;
+  font-size: clamp(4.5rem, 26vw, 7rem);
+  line-height: 1;
+  color: #000;
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.5), 3px 4px 6px rgba(0, 0, 0, 0.35);
+}
+
+.top-date {
+  max-width: 92%;
+  font-size: clamp(0.85rem, 4.2vw, 1.1rem);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  font-weight: 700;
+  color: #000;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.55), 2px 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-hint {
+  margin-top: 1rem;
+  color: var(--color-accent);
+  font-size: 1.4rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+
+/* --- Calendar --- */
+
+.calendar-widget {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: inline-block;
+  border: 1px solid #f0f0f0;
+}
+
+.month-title {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.calendar-table th {
+  color: var(--color-accent);
+  font-weight: 600;
+  padding: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.calendar-table td {
+  padding: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.calendar-table td.muted {
+  color: #ccc;
+}
+
+.wedding-day {
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.calendar-note {
+  margin-top: 1.1rem;
+  font-style: italic;
+}
+
+/* --- Countdown --- */
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.countdown > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  padding: 0.8rem 0.7rem;
+  border-radius: 8px;
+  min-width: 62px;
+  border: 1px solid var(--color-accent);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.countdown span {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 0.05em;
+  margin-top: 0.3rem;
+}
+
+.welcome-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.couple-names-inline {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+.schedule-list .time {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.venue-name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.4rem;
+}
+
+.venue-address {
+  color: #777;
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+}
+
+.map-link {
+  display: inline-block;
+  width: 100%;
+  max-width: 260px;
+  padding: 0.9rem;
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #fff;
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rsvp {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin: 1.25rem;
+  border: 1px solid rgba(184, 156, 124, 0.2);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
+.rsvp-form label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.85rem;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-family: inherit;
+  background: #fdfdfd;
+}
+
+.attendance-options,
+.side-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.attendance-options legend,
+.side-options legend {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #888;
+  padding: 0;
+  margin-bottom: 0.3rem;
+}
+
+.attendance-options label,
+.side-options label {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fdfdfd;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.attendance-options input,
+.side-options input {
+  margin-right: 0.75rem;
+  transform: scale(1.3);
+  accent-color: var(--color-accent);
+}
+
+.guest-count-block.hidden {
+  display: none;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: #fdfdfd;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.stepper button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent);
+  background: #fff;
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stepper button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+#guest-count {
+  font-size: 1.3rem;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+}
+
+.rsvp-form button[type='submit'] {
+  padding: 0.9rem;
+  border: none;
+  border-radius: 10px;
+  background: #6d7561;
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  min-height: 1.2em;
+  text-align: center;
+}
+
+.dress-code {
+  border-top: 1px solid rgba(184, 156, 124, 0.2);
+}
+
+.footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--color-accent);
+  opacity: 0.6;
+}
+
+.music-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-accent);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-primary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.music-toggle.playing {
+  background: var(--color-accent);
+  color: #fff;
+}

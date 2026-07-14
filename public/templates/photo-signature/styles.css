@@ -49,8 +49,12 @@ section {
   border-bottom: none;
 }
 
+.hero.has-photo {
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6)), var(--hero-photo-url);
+}
+
 .hero:not(.has-photo) {
-  background-image: linear-gradient(160deg, #a98d6b, #6b5d4f) !important;
+  background-image: linear-gradient(160deg, #a98d6b, #6b5d4f);
 }
 
 .save-date-label {

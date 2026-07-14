@@ -76,6 +76,20 @@
       "categories": ["wedding"],
       "type": "illustrated",
       "screenshot": "screenshots/illustrated-bloom.png"
+    },
+    {
+      "id": "framed-photo",
+      "name": "Framed Photo",
+      "categories": ["wedding"],
+      "type": "photo",
+      "screenshot": "screenshots/framed-photo.png"
+    },
+    {
+      "id": "framed-monogram",
+      "name": "Framed Monogram",
+      "categories": ["wedding"],
+      "type": "initials",
+      "screenshot": "screenshots/framed-monogram.png"
     }
   ]
 }

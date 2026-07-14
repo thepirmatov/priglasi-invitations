@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ky">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Чакыруу</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Marck+Script&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <button id="music-toggle" class="music-toggle" aria-label="Музыканы күйгүзүү/өчүрүү">♪</button>
+  <audio id="bg-music" loop preload="none"></audio>
+
+  <div class="frame">
+    <main>
+      <section class="hero">
+        <div class="monogram">
+          <span id="couple-initials" class="monogram-letters"></span>
+        </div>
+        <p id="event-date" class="top-date"></p>
+        <div class="scroll-hint" aria-hidden="true">⌄</div>
+      </section>
+
+      <section class="calendar-section">
+        <div class="ornament">❧</div>
+        <div id="calendar-widget" class="calendar-widget"></div>
+        <p class="calendar-note">Бул күнү биздин кубанычыбызга<br />ортоктош болуңуз!</p>
+      </section>
+
+      <section class="countdown-section">
+        <div class="ornament">❧</div>
+        <p id="event-type" class="event-type"></p>
+        <div id="countdown" class="countdown" aria-live="polite"></div>
+      </section>
+
+      <section class="welcome-section">
+        <div class="ornament">❧</div>
+        <h2>Урматтуу коноктор!</h2>
+        <p class="welcome-text">Сиздерди <span id="couple-names" class="couple-names-inline"></span> үйлөнүү үлпөт тоюна арналган салтанатыбызга келип, кадырлуу коногубуз болуп кетүүгө чакырабыз!</p>
+      </section>
+
+      <section class="details">
+        <div class="ornament">❧</div>
+        <h2>Дареги</h2>
+        <p id="venue-name" class="venue-name"></p>
+        <p id="venue-address" class="venue-address"></p>
+        <a id="map-link" class="map-link" href="#" target="_blank" rel="noopener">Картаны ачуу</a>
+      </section>
+
+      <section class="dress-code">
+        <div class="ornament">❧</div>
+        <h2>Дресс-код</h2>
+        <p id="dress-code-text"></p>
+      </section>
+
+      <section class="rsvp">
+        <div class="ornament">❧</div>
+        <h2>Катышууңузду ырастап коюңуз</h2>
+        <form id="rsvp-form" class="rsvp-form">
+          <label for="guest-name">Аты-жөнүңүз</label>
+          <input type="text" id="guest-name" name="guestName" required />
+
+          <fieldset class="attendance-options">
+            <legend>Тойго келе аласызбы?</legend>
+            <label><input type="radio" name="attendance" value="yes" required /> Ооба, сөзсүз барам!</label>
+            <label><input type="radio" name="attendance" value="no" /> Тилекке каршы, бара албайм</label>
+          </fieldset>
+
+          <div id="guest-count-block" class="guest-count-block hidden">
+            <label>Канча адам болосуздар?</label>
+            <div class="stepper">
+              <button type="button" id="guest-count-decrease" aria-label="Азайтуу">&minus;</button>
+              <span id="guest-count">1</span>
+              <button type="button" id="guest-count-increase" aria-label="Көбөйтүү">+</button>
+            </div>
+          </div>
+
+          <fieldset class="side-options">
+            <legend>Кимдин коногусуз?</legend>
+            <label><input type="radio" name="side" /> <span id="side-label-a"></span></label>
+            <label><input type="radio" name="side" /> <span id="side-label-b"></span></label>
+          </fieldset>
+
+          <button type="submit">Жоопту жөнөтүү</button>
+          <p id="rsvp-status" class="rsvp-status" role="status"></p>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <p>❧ ❧ ❧</p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../../shared/template-core.js"></script>
+</body>
+</html>

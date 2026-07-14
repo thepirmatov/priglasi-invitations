@@ -1,0 +1,23 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Ариет & Жумагүл",
+  "date": "2026-08-07",
+  "time": "17:00",
+  "venueName": "«MERRI GARDEN»",
+  "venueAddress": "Нурматов көчөсү, 82/9, Ош ш.",
+  "mapUrl": "https://2gis.kg/bishkek/geo/70000001063036020",
+  "schedule": [
+    { "time": "16:00", "label": "Коноктордун келиши" },
+    { "time": "17:00", "label": "Тойдун башталышы" },
+    { "time": "22:00", "label": "Тойдун бүтүшү" }
+  ],
+  "dressCode": "Кечки стиль",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "photos/hero.jpg",
+  "colorTheme": {
+    "primary": "#4a4238",
+    "accent": "#b89c7c",
+    "background": "#ece5da"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

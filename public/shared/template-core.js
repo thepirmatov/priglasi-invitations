@@ -18,16 +18,19 @@ function applyColorTheme(colorTheme = {}) {
 }
 
 // Optional: a couple's own photo behind their names. Templates that support
-// this opt in via a `.hero.has-photo` CSS block; the gradient overlay keeps
-// white hero text readable regardless of how bright the source photo is.
+// this opt in via a `.hero.has-photo` CSS block. JS only supplies the raw
+// photo as a custom property - each template's own CSS decides the overlay
+// gradient (dark-fade-up for white hero text, white-fade-up for dark text,
+// etc.), since that's a presentation choice, not something the data layer
+// should be dictating.
 function applyHeroPhoto(heroPhotoUrl) {
   const hero = document.querySelector('.hero');
   if (!hero) return;
   if (heroPhotoUrl) {
-    hero.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url("${heroPhotoUrl}")`;
+    hero.style.setProperty('--hero-photo-url', `url("${heroPhotoUrl}")`);
     hero.classList.add('has-photo');
   } else {
-    hero.style.backgroundImage = '';
+    hero.style.removeProperty('--hero-photo-url');
     hero.classList.remove('has-photo');
   }
 }
@@ -41,6 +44,128 @@ function getInitials(coupleNames) {
     .map((part) => part.trim().charAt(0).toUpperCase())
     .filter(Boolean)
     .join(' & ');
+}
+
+// Opt-in: templates with <div id="calendar-widget"></div> get a full month
+// grid rendered with the wedding day circled, computed from config.date.
+function renderCalendar(dateStr) {
+  const container = document.getElementById('calendar-widget');
+  if (!container || !dateStr) return;
+
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const monthIndex = month - 1;
+  const firstWeekday = (new Date(year, monthIndex, 1).getDay() + 6) % 7; // 0=Mon .. 6=Sun
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, monthIndex, 0).getDate();
+
+  const cells = [];
+  for (let i = firstWeekday - 1; i >= 0; i--) cells.push({ day: daysInPrevMonth - i, muted: true });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, muted: false, isTarget: d === day });
+  let next = 1;
+  while (cells.length % 7 !== 0) cells.push({ day: next++, muted: true });
+
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  const weekdayLabels = ['Дш', 'Шш', 'Шр', 'Бш', 'Жм', 'Иш', 'Жк'];
+  const rows = weeks
+    .map(
+      (week) =>
+        `<tr>${week
+          .map((c) => `<td class="${c.muted ? 'muted' : ''}">${c.isTarget ? `<span class="wedding-day">${c.day}</span>` : c.day}</td>`)
+          .join('')}</tr>`
+    )
+    .join('');
+
+  container.innerHTML = `
+    <div class="month-title">${MONTHS_KY[monthIndex]}</div>
+    <table class="calendar-table">
+      <thead><tr>${weekdayLabels.map((w) => `<th>${w}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// Opt-in: templates with <div id="collage-grid"></div> (inside a <section>)
+// get a photo grid rendered from config.collagePhotos; the whole section
+// hides itself when the customer hasn't uploaded any collage photos.
+function renderCollage(photos) {
+  const container = document.getElementById('collage-grid');
+  if (!container) return;
+  const list = photos || [];
+  const section = container.closest('section');
+
+  if (!list.length) {
+    if (section) section.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+  if (section) section.style.display = '';
+  container.innerHTML = list
+    .map((url) => `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="" /></a>`)
+    .join('');
+}
+
+// Opt-in: templates with <p id="hosts-names"></p> (inside a <section>) show
+// the couple's parents/hosts; hides itself when the customer left it blank.
+function renderHosts(hostsNames) {
+  const el = document.getElementById('hosts-names');
+  if (!el) return;
+  const section = el.closest('section');
+  el.textContent = hostsNames || '';
+  if (section) section.style.display = hostsNames ? '' : 'none';
+}
+
+let guestCountStepperInitialized = false;
+// Opt-in: templates with #guest-count-block (+ stepper buttons) show a guest
+// count only while "attending" is selected, matching how a plus-one headcount
+// is actually collected in the reference designs this pattern came from.
+function setupGuestCountStepper() {
+  const block = document.getElementById('guest-count-block');
+  const countEl = document.getElementById('guest-count');
+  const decreaseBtn = document.getElementById('guest-count-decrease');
+  const increaseBtn = document.getElementById('guest-count-increase');
+  if (!block || !countEl || !decreaseBtn || !increaseBtn || guestCountStepperInitialized) return;
+  guestCountStepperInitialized = true;
+
+  let count = 1;
+  function update() {
+    countEl.textContent = String(count);
+    decreaseBtn.disabled = count <= 1;
+  }
+  decreaseBtn.addEventListener('click', () => {
+    if (count > 1) { count -= 1; update(); }
+  });
+  increaseBtn.addEventListener('click', () => {
+    if (count < 20) { count += 1; update(); }
+  });
+
+  document.querySelectorAll('input[name="attendance"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      const checked = document.querySelector('input[name="attendance"]:checked');
+      const attending = !!checked && checked.value === 'yes';
+      block.classList.toggle('hidden', !attending);
+      if (!attending) { count = 1; update(); }
+    });
+  });
+  update();
+}
+
+// Opt-in: templates with #side-label-a/#side-label-b (paired with
+// input[name="side"] radios) get those labels/values filled in from the
+// couple's own names instead of a hardcoded pair of names per template.
+function setupSideLabels(coupleNames) {
+  const labelA = document.getElementById('side-label-a');
+  const labelB = document.getElementById('side-label-b');
+  if (!labelA || !labelB || !coupleNames) return;
+
+  const [nameA, nameB] = coupleNames.split('&').map((part) => part.trim());
+  labelA.textContent = nameA || '';
+  labelB.textContent = nameB || '';
+
+  const sideRadios = document.querySelectorAll('input[name="side"]');
+  if (sideRadios[0]) sideRadios[0].value = nameA || '';
+  if (sideRadios[1]) sideRadios[1].value = nameB || '';
 }
 
 let revealGateInitialized = false;
@@ -202,15 +327,26 @@ function setupRsvpForm(telegramChatId, rsvpEndpoint) {
     submitButton.disabled = true;
     status.textContent = 'Жөнөтүлүүдө...';
 
+    // guestCount/side are optional, only present on templates with the
+    // guest-count stepper / bride-groom side picker (see setupGuestCountStepper
+    // and setupSideLabels) - rsvp.js includes them in the Telegram message when present.
+    const body = { telegramChatId: form.dataset.telegramChatId, guestName, attendance };
+    const guestCountEl = document.getElementById('guest-count');
+    if (guestCountEl && attendance === 'yes') body.guestCount = Number(guestCountEl.textContent);
+    const sideChecked = document.querySelector('input[name="side"]:checked');
+    if (sideChecked) body.side = sideChecked.value;
+
     try {
       const response = await fetch(form.dataset.rsvpEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramChatId: form.dataset.telegramChatId, guestName, attendance }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error(`Request failed: ${response.status}`);
       status.textContent = 'Рахмат! Жообуңуз жөнөтүлдү.';
       form.reset();
+      const guestCountBlock = document.getElementById('guest-count-block');
+      if (guestCountBlock) guestCountBlock.classList.add('hidden');
     } catch (err) {
       status.textContent = 'Ката кетти, кайра аракет кылыңыз.';
     } finally {
@@ -228,9 +364,14 @@ function render(config) {
   applyColorTheme(config.colorTheme);
   applyHeroPhoto(config.heroPhotoUrl);
   renderStaticContent(config);
+  renderCalendar(config.date);
+  renderCollage(config.collagePhotos);
+  renderHosts(config.hostsNames);
   startCountdown(config.date, config.time);
   setupMusic(config.musicUrl);
   setupRsvpForm(config.telegramChatId, config.rsvpEndpoint);
+  setupGuestCountStepper();
+  setupSideLabels(config.coupleNames);
   setupRevealGate();
 }
 

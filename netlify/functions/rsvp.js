@@ -15,7 +15,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
   }
 
-  const { telegramChatId, guestName, attendance } = payload;
+  const { telegramChatId, guestName, attendance, guestCount, side } = payload;
   if (!telegramChatId || !guestName || !attendance) {
     return {
       statusCode: 400,
@@ -29,7 +29,12 @@ exports.handler = async (event) => {
   }
 
   const attendanceLabel = ATTENDANCE_LABELS[attendance] || attendance;
-  const text = `Жаңы RSVP\n\nАты-жөнү: ${guestName}\nКатышуу: ${attendanceLabel}`;
+  // guestCount/side only arrive from templates with the guest-count stepper /
+  // bride-groom side picker (see setupGuestCountStepper in template-core.js).
+  const lines = [`Жаңы RSVP`, '', `Аты-жөнү: ${guestName}`, `Катышуу: ${attendanceLabel}`];
+  if (guestCount) lines.push(`Конок саны: ${guestCount}`);
+  if (side) lines.push(`Кимдин коногу: ${side}`);
+  const text = lines.join('\n');
 
   const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',

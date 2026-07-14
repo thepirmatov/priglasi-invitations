@@ -58,7 +58,6 @@ async function main() {
   const catalog = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
   const port = 8934;
   const server = await startServer(port);
-  const browser = await puppeteer.launch({ executablePath: findChrome(), headless: true });
 
   try {
     for (const entry of catalog.templates) {
@@ -68,14 +67,21 @@ async function main() {
       const outPath = path.join(ROOT, 'catalog', entry.screenshot);
       console.log(`Rendering ${entry.id} -> ${entry.screenshot}`);
 
-      const page = await browser.newPage();
-      await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-      await page.goto(`http://localhost:${port}/templates/${entry.id}/`, { waitUntil: 'networkidle0', timeout: 15000 });
-      await page.screenshot({ path: outPath });
-      await page.close();
+      // A fresh browser per template, not one browser reused across every
+      // navigation: under load, repeated navigations in a single long-lived
+      // Chrome instance were observed to progressively slow down and
+      // eventually hang, even for lightweight templates.
+      const browser = await puppeteer.launch({ executablePath: findChrome(), headless: true });
+      try {
+        const page = await browser.newPage();
+        await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+        await page.goto(`http://localhost:${port}/templates/${entry.id}/`, { waitUntil: 'networkidle0', timeout: 60000 });
+        await page.screenshot({ path: outPath });
+      } finally {
+        await browser.close();
+      }
     }
   } finally {
-    await browser.close();
     server.close();
   }
 

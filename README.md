@@ -71,8 +71,40 @@ customer site can call its own relative `/.netlify/functions/*`.
    `#schedule-list`, `#dress-code-text`, `#music-toggle`, `#bg-music`, `#rsvp-form` — `shared/template-core.js`
    depends on this contract and is what makes the wizard preview pixel-identical to the deployed site).
 2. Give it a distinct `styles.css` (and optionally a Google Fonts `<link>` in the `<head>`).
-3. Add an entry to `public/catalog/templates.json` (id, name, categories, screenshot path).
+3. Add an entry to `public/catalog/templates.json`, including a `type` (must be one of the ids listed in
+   that file's top-level `types` array — the storefront's type tabs are derived from whichever types are
+   actually present in the selected category, so a brand new type just needs a `{ id, label }` entry there).
 4. Run `npm run screenshots` to render its carousel thumbnail.
+
+### Optional opt-in capabilities (element presence, not a config flag)
+
+`shared/template-core.js` supports several capabilities that only activate if the template's HTML includes
+the relevant element — omit the element entirely and the template just doesn't get that feature (safe to
+skip on templates where it doesn't fit the design):
+
+- **Photo hero** — hero element needs `.hero.has-photo { background-image: ...; var(--hero-photo-url); ... }`
+  in its own CSS (JS only supplies the raw photo via the `--hero-photo-url` custom property; each template
+  decides its own overlay gradient/fade direction and text color — see `framed-photo`'s white fade vs
+  `classic-earth`'s dark fade vs `framed-monogram`'s plain text-shadow, no overlay at all).
+- **Monogram initials** — `#couple-initials`, auto-computed from `coupleNames` (`"Азамат & Жасмина"` → `"А & Ж"`).
+- **Reveal gate** — `#reveal-gate` (envelope/wax-seal style "tap to open"); also the one place autoplay music
+  is safe to trigger, since a real click just happened.
+- **Calendar widget** — `#calendar-widget`, a full month grid generated from `config.date` with the wedding
+  day circled.
+- **Photo collage** — `#collage-grid` inside a `<section>`; the whole section hides itself when the customer
+  hasn't uploaded any collage photos.
+- **Hosts/parents names** — `#hosts-names` inside a `<section>`; same auto-hide behavior when blank.
+- **Guest count + bride/groom side RSVP** — `#guest-count-block` (+ stepper buttons) shows a headcount only
+  while "attending" is selected; `#side-label-a`/`#side-label-b` (paired with `input[name="side"]`) get
+  filled in from the couple's own names rather than being hardcoded per template. Both are included in the
+  RSVP's Telegram message by `rsvp.js` when present.
+
+### Photo uploads
+
+The wizard's hero-photo and collage-photo fields are real file pickers, not URL text fields — a selected
+photo is resized (long edge capped, re-encoded as JPEG) and embedded as a data URL client-side in
+`compressImageFile()` (`public/storefront/app.js`), with no separate storage/CDN backend. This keeps typical
+uploads to a couple hundred KB, comfortably inside Netlify Functions' request-body limits.
 
 ## Running locally
 
