@@ -1,0 +1,14 @@
+{
+  "name": "priglasi-invitations",
+  "private": true,
+  "scripts": {
+    "screenshots": "node scripts/generate-screenshots.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.3.0"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.9",
+    "jszip": "^3.10.1"
+  }
+}

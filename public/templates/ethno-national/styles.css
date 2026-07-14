@@ -1,0 +1,223 @@
+:root {
+  --color-primary: #3a1e12;
+  --color-accent: #b5432a;
+  --color-background: #f4e9d8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Oswald', 'Arial Narrow', sans-serif;
+  background: var(--color-background);
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+  border-left: 6px solid var(--color-accent);
+  border-right: 6px solid var(--color-accent);
+}
+
+section {
+  padding: 2.5rem 0;
+  border-bottom: 3px double var(--color-accent);
+  text-align: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 2.5rem 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+}
+
+.hero {
+  padding-top: 3.5rem;
+}
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 0 0 1.25rem;
+}
+
+.couple-names {
+  font-size: 2.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0 0 1rem;
+}
+
+.event-date {
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 1.5rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.countdown span {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+}
+
+h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 0 0 1.25rem;
+}
+
+.venue-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0 0 0.35rem;
+}
+
+.venue-address {
+  margin: 0 0 1.25rem;
+}
+
+.map-link {
+  display: inline-block;
+  padding: 0.6rem 1.75rem;
+  border: 2px solid var(--color-accent);
+  color: var(--color-accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.map-link:hover {
+  background: var(--color-accent);
+  color: var(--color-background);
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem;
+}
+
+.schedule-list .time {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 300px;
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+
+.rsvp-form label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.6rem 0.75rem;
+  border: 2px solid var(--color-accent);
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+.attendance-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.attendance-options legend {
+  display: none;
+}
+
+.rsvp-form button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-background);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.rsvp-status {
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.music-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  background: var(--color-background);
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.music-toggle.playing {
+  background: var(--color-accent);
+  color: var(--color-background);
+}

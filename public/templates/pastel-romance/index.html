@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ky">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Чакыруу</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <button id="music-toggle" class="music-toggle" aria-label="Музыканы күйгүзүү/өчүрүү">♪</button>
+  <audio id="bg-music" loop preload="none"></audio>
+
+  <main>
+    <section class="hero">
+      <p id="event-type" class="event-type"></p>
+      <h1 id="couple-names" class="couple-names"></h1>
+      <p id="event-date" class="event-date"></p>
+      <div id="countdown" class="countdown" aria-live="polite"></div>
+    </section>
+
+    <section class="details">
+      <h2>Той кайда болот</h2>
+      <p id="venue-name" class="venue-name"></p>
+      <p id="venue-address" class="venue-address"></p>
+      <a id="map-link" class="map-link" href="#" target="_blank" rel="noopener">Картаны ачуу</a>
+    </section>
+
+    <section class="schedule">
+      <h2>Программа</h2>
+      <ul id="schedule-list" class="schedule-list"></ul>
+    </section>
+
+    <section class="dress-code">
+      <h2>Дресс-код</h2>
+      <p id="dress-code-text"></p>
+    </section>
+
+    <section class="rsvp">
+      <h2>Катышасызбы?</h2>
+      <form id="rsvp-form" class="rsvp-form">
+        <label for="guest-name">Сиздин аты-жөнүңүз</label>
+        <input type="text" id="guest-name" name="guestName" required />
+
+        <fieldset class="attendance-options">
+          <legend>Катышуу</legend>
+          <label><input type="radio" name="attendance" value="yes" required /> Катышам</label>
+          <label><input type="radio" name="attendance" value="no" /> Катыша албайм</label>
+        </fieldset>
+
+        <button type="submit">Жөнөтүү</button>
+        <p id="rsvp-status" class="rsvp-status" role="status"></p>
+      </form>
+    </section>
+
+    <footer class="footer">
+      <p>Сиз менен бирге болгонубузга кубанычтабыз</p>
+    </footer>
+  </main>
+
+  <script src="../../shared/template-core.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Мирлан & Айданa",
+  "date": "2026-11-14",
+  "time": "19:00",
+  "venueName": "Grand Palace",
+  "venueAddress": "Ахунбаев көчөсү 95, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Grand+Palace+Бишкек",
+  "schedule": [
+    { "time": "19:00", "label": "Коноктарды тосуу" },
+    { "time": "19:30", "label": "Салтанаттуу аземи" },
+    { "time": "20:30", "label": "Той дасторкону" },
+    { "time": "23:00", "label": "Кечки бөлүм" }
+  ],
+  "dressCode": "Кечки стиль, алтын жана кара тондор",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/1.jpeg",
+  "colorTheme": {
+    "primary": "#e9d9a8",
+    "accent": "#c9a227",
+    "background": "#141110"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

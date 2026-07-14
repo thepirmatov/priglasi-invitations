@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ky">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Чакыруу</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <button id="music-toggle" class="music-toggle" aria-label="Музыканы күйгүзүү/өчүрүү">♪</button>
+  <audio id="bg-music" loop preload="none"></audio>
+
+  <main>
+    <section class="hero">
+      <svg class="bloom-arch" viewBox="0 0 300 170" aria-hidden="true">
+        <ellipse cx="37" cy="109" rx="16" ry="6" transform="rotate(290 37 109)" />
+        <ellipse cx="55" cy="77" rx="16" ry="6" transform="rotate(307 55 77)" />
+        <ellipse cx="81" cy="52" rx="16" ry="6" transform="rotate(325 81 52)" />
+        <ellipse cx="114" cy="36" rx="16" ry="6" transform="rotate(342 114 36)" />
+        <ellipse cx="150" cy="30" rx="16" ry="6" transform="rotate(0 150 30)" />
+        <ellipse cx="186" cy="36" rx="16" ry="6" transform="rotate(18 186 36)" />
+        <ellipse cx="219" cy="52" rx="16" ry="6" transform="rotate(35 219 52)" />
+        <ellipse cx="245" cy="77" rx="16" ry="6" transform="rotate(53 245 77)" />
+        <ellipse cx="263" cy="109" rx="16" ry="6" transform="rotate(70 263 109)" />
+      </svg>
+      <p id="event-type" class="event-type"></p>
+      <h1 id="couple-names" class="couple-names"></h1>
+      <p id="event-date" class="event-date"></p>
+      <div id="countdown" class="countdown" aria-live="polite"></div>
+    </section>
+
+    <section class="details">
+      <h2>Той кайда болот</h2>
+      <p id="venue-name" class="venue-name"></p>
+      <p id="venue-address" class="venue-address"></p>
+      <a id="map-link" class="map-link" href="#" target="_blank" rel="noopener">Картаны ачуу</a>
+    </section>
+
+    <section class="schedule">
+      <h2>Программа</h2>
+      <ul id="schedule-list" class="schedule-list"></ul>
+    </section>
+
+    <section class="dress-code">
+      <h2>Дресс-код</h2>
+      <p id="dress-code-text"></p>
+    </section>
+
+    <section class="rsvp">
+      <h2>Катышасызбы?</h2>
+      <form id="rsvp-form" class="rsvp-form">
+        <label for="guest-name">Сиздин аты-жөнүңүз</label>
+        <input type="text" id="guest-name" name="guestName" required />
+
+        <fieldset class="attendance-options">
+          <legend>Катышуу</legend>
+          <label><input type="radio" name="attendance" value="yes" required /> Катышам</label>
+          <label><input type="radio" name="attendance" value="no" /> Катыша албайм</label>
+        </fieldset>
+
+        <button type="submit">Жөнөтүү</button>
+        <p id="rsvp-status" class="rsvp-status" role="status"></p>
+      </form>
+    </section>
+
+    <footer class="footer">
+      <p>Сиз менен бирге болгонубузга кубанычтабыз</p>
+    </footer>
+  </main>
+
+  <script src="../../shared/template-core.js"></script>
+</body>
+</html>

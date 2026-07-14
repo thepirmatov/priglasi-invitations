@@ -1,0 +1,22 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Нурлан & Айперч",
+  "date": "2026-08-15",
+  "time": "16:00",
+  "venueName": "Флора Гарден",
+  "venueAddress": "Асанбай 12, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Флора+Гарден+Бишкек",
+  "schedule": [
+    { "time": "16:00", "label": "Коноктарды тосуу" },
+    { "time": "16:30", "label": "Никелешүү аземи" },
+    { "time": "17:30", "label": "Той дасторкону" }
+  ],
+  "dressCode": "Жеңил, гүлдүү түстөр",
+  "musicUrl": "assets/music.mp3",
+  "colorTheme": {
+    "primary": "#6b4a52",
+    "accent": "#c98fa0",
+    "background": "#fdf5f3"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

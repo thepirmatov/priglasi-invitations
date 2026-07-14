@@ -1,0 +1,23 @@
+{
+  "eventType": "kyzUzatuu",
+  "coupleNames": "Айзада",
+  "date": "2026-08-22",
+  "time": "13:00",
+  "venueName": "Роза бак-парк",
+  "venueAddress": "Молодая Гвардия 40, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Роза+бак-парк+Бишкек",
+  "schedule": [
+    { "time": "13:00", "label": "Коноктарды тосуу" },
+    { "time": "14:00", "label": "Узатуу расми" },
+    { "time": "15:00", "label": "Дасторкон" }
+  ],
+  "dressCode": "Пастель тондор сунушталат",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/4.jpeg",
+  "colorTheme": {
+    "primary": "#6b4c5c",
+    "accent": "#e8a5c0",
+    "background": "#fdf1f6"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

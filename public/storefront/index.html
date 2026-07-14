@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ky">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRIGLASI — Чакырууну тандаңыз</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Screen 1: category -->
+    <section id="screen-category" class="screen">
+      <h1>Кайсы иш-чара үчүн?</h1>
+      <div class="category-cards">
+        <button class="category-card" data-category="wedding">
+          <span class="category-emoji">💍</span>
+          <span>Той</span>
+        </button>
+        <button class="category-card" data-category="kyzUzatuu">
+          <span class="category-emoji">🌸</span>
+          <span>Кыз узатуу</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Screen 2: carousel -->
+    <section id="screen-carousel" class="screen hidden">
+      <button class="back-button" data-back="screen-category">← Артка</button>
+      <h1>Дизайнды тандаңыз</h1>
+      <div id="type-tabs" class="type-tabs"></div>
+      <div class="carousel-wrap">
+        <button class="carousel-arrow carousel-arrow-left" aria-label="Мурунку">‹</button>
+        <div id="carousel-track" class="carousel-track"></div>
+        <button class="carousel-arrow carousel-arrow-right" aria-label="Кийинки">›</button>
+      </div>
+      <button id="use-template-button" class="primary-button" disabled>Колдонуу</button>
+    </section>
+
+    <!-- Screen 3: wizard -->
+    <section id="screen-wizard" class="screen hidden">
+      <button class="back-button" data-back="screen-carousel">← Артка</button>
+
+      <div class="preview-wrap">
+        <iframe id="preview-frame" title="Алдын ала көрүү"></iframe>
+      </div>
+
+      <div class="wizard-steps">
+        <div class="wizard-step" data-step="0">
+          <h2>Аты-жөнү</h2>
+          <label>Аты-жөнү (мис. Азамат & Жасмина)</label>
+          <input type="text" id="field-coupleNames" />
+          <label>Аты-жөнүнүн артындагы сүрөт (шилтеме, милдеттүү эмес)</label>
+          <input type="text" id="field-heroPhotoUrl" placeholder="https://..." />
+        </div>
+
+        <div class="wizard-step" data-step="1">
+          <h2>Күнү жана убактысы</h2>
+          <label>Күнү</label>
+          <input type="date" id="field-date" />
+          <label>Убактысы</label>
+          <input type="time" id="field-time" />
+        </div>
+
+        <div class="wizard-step" data-step="2">
+          <h2>Той кайда болот</h2>
+          <label>Мейманкана/аймактын аты</label>
+          <input type="text" id="field-venueName" />
+          <label>Дареги</label>
+          <input type="text" id="field-venueAddress" />
+          <label>Карта шилтемеси (Google Maps)</label>
+          <input type="text" id="field-mapUrl" placeholder="https://maps.google.com/..." />
+        </div>
+
+        <div class="wizard-step" data-step="3">
+          <h2>Программа</h2>
+          <div id="schedule-rows"></div>
+          <button type="button" id="add-schedule-row" class="secondary-button">+ Кошуу</button>
+        </div>
+
+        <div class="wizard-step" data-step="4">
+          <h2>Дресс-код</h2>
+          <input type="text" id="field-dressCode" />
+        </div>
+
+        <div class="wizard-step" data-step="5">
+          <h2>Музыка</h2>
+          <label>Ырдын шилтемеси (же четке кийин бизге түздөн-түз жөнөтөсүз)</label>
+          <input type="text" id="field-musicUrl" placeholder="https://..." />
+        </div>
+
+        <div class="wizard-step" data-step="6">
+          <h2>Байланыш маалыматы</h2>
+          <label>Сиздин атыңыз</label>
+          <input type="text" id="field-customerName" />
+          <label>Телефон/Telegram</label>
+          <input type="text" id="field-customerContact" placeholder="+996 XXX XXX XXX же @username" />
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <button id="wizard-prev" class="secondary-button">Артка</button>
+        <button id="wizard-next" class="primary-button">Кийинки</button>
+        <button id="wizard-submit" class="primary-button hidden">Telegram аркылуу жөнөтүү</button>
+      </div>
+    </section>
+
+    <!-- Screen 4: confirmation -->
+    <section id="screen-confirmation" class="screen hidden">
+      <h1>Рахмат!</h1>
+      <p>Сиздин буйрутмаңыз жөнөтүлдү. Төлөмдү тактоо үчүн жакында сиз менен байланышабыз.</p>
+      <p class="order-id-line">Буйрутма номери: <span id="confirmation-order-id"></span></p>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Дастан & Аяна",
+  "date": "2026-09-05",
+  "time": "17:00",
+  "venueName": "Achaen Beach House",
+  "venueAddress": "Ысык-Көл, Чолпон-Ата",
+  "mapUrl": "https://maps.google.com/?q=Чолпон-Ата",
+  "schedule": [
+    { "time": "17:00", "label": "Коноктарды тосуу" },
+    { "time": "17:30", "label": "Никелешүү аземи" },
+    { "time": "18:30", "label": "Той дасторкону" }
+  ],
+  "dressCode": "Жайлык, ачык түстөр",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/3.jpeg",
+  "colorTheme": {
+    "primary": "#3a332e",
+    "accent": "#a98d6b",
+    "background": "#faf8f5"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

@@ -1,0 +1,233 @@
+:root {
+  --color-primary: #6b4c5c;
+  --color-accent: #e8a5c0;
+  --color-background: #fdf1f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Quicksand', -apple-system, sans-serif;
+  background: linear-gradient(180deg, var(--color-background), #f3ecfa 60%, var(--color-background));
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+section {
+  padding: 2rem 1.5rem;
+  margin: 1.5rem 0;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 28px;
+  box-shadow: 0 10px 30px rgba(107, 76, 92, 0.08);
+  text-align: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 2.5rem 0 0;
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.hero {
+  padding-top: 3.5rem;
+  background: none;
+  box-shadow: none;
+}
+
+.hero.has-photo {
+  margin: 0 -1.5rem;
+  padding: 5rem 1.5rem 3rem;
+  border-radius: 0 0 28px 28px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: clamp(420px, 78vh, 680px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.hero.has-photo .event-type,
+.hero.has-photo .couple-names,
+.hero.has-photo .event-date,
+.hero.has-photo .countdown,
+.hero.has-photo .countdown span {
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  margin: 0 0 1rem;
+}
+
+.couple-names {
+  font-family: 'Caveat', cursive;
+  font-size: 4rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--color-primary);
+}
+
+.event-date {
+  font-size: 1rem;
+  margin: 0 0 1.5rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.countdown span {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+h2 {
+  font-family: 'Caveat', cursive;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 0 0 1rem;
+}
+
+.venue-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.venue-address {
+  margin: 0 0 1rem;
+}
+
+.map-link {
+  display: inline-block;
+  padding: 0.65rem 1.75rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  text-decoration: none;
+}
+
+.map-link:hover {
+  background: var(--color-primary);
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.4rem 0;
+}
+
+.schedule-list .time {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 300px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.65rem 1rem;
+  border: 2px solid #f3d4e2;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+.rsvp-form input[type='text']:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.attendance-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.attendance-options legend {
+  display: none;
+}
+
+.rsvp-form button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.music-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(107, 76, 92, 0.15);
+}
+
+.music-toggle.playing {
+  background: var(--color-accent);
+  color: #fff;
+}

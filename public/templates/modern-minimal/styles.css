@@ -1,0 +1,245 @@
+:root {
+  --color-primary: #1a1a1a;
+  --color-accent: #b08968;
+  --color-background: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  background: var(--color-background);
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+main {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+section {
+  padding: 3rem 0;
+  border-bottom: 1px solid #eaeaea;
+  text-align: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 3rem 0 0;
+  color: #999;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.hero {
+  padding-top: 4.5rem;
+}
+
+.hero.has-photo {
+  margin: 0 -2rem;
+  padding: 5rem 2rem 3rem;
+  border-bottom: none;
+  border-radius: 0 0 4px 4px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: clamp(420px, 78vh, 680px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.hero.has-photo .event-type,
+.hero.has-photo .couple-names,
+.hero.has-photo .event-date,
+.hero.has-photo .countdown,
+.hero.has-photo .countdown span {
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  font-size: 0.7rem;
+  color: var(--color-accent);
+  margin: 0 0 1.5rem;
+}
+
+.couple-names {
+  font-size: 2.75rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  margin: 0 0 1rem;
+}
+
+.event-date {
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: #666;
+  margin: 0 0 2rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.countdown span {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+h2 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-weight: 600;
+  color: #999;
+  margin: 0 0 1.25rem;
+}
+
+.venue-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.venue-address {
+  color: #666;
+  margin: 0 0 1.25rem;
+}
+
+.map-link {
+  display: inline-block;
+  padding: 0.65rem 1.75rem;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.map-link:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.schedule-list .time {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 300px;
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+
+.rsvp-form label {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.6rem 0;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  font-size: 1rem;
+  font-family: inherit;
+  background: transparent;
+}
+
+.rsvp-form input[type='text']:focus {
+  outline: none;
+  border-bottom-color: var(--color-primary);
+}
+
+.attendance-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.attendance-options legend {
+  display: none;
+}
+
+.rsvp-form button {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.rsvp-status {
+  text-align: center;
+  min-height: 1.2em;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.music-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: var(--color-primary);
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.music-toggle.playing {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}

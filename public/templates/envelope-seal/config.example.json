@@ -1,0 +1,23 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Алмаз & Айгерим",
+  "date": "2026-09-20",
+  "time": "18:00",
+  "venueName": "Ак Кеме Restaurant",
+  "venueAddress": "Тоголок Молдо 41, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Ак+Кеме+Бишкек",
+  "schedule": [
+    { "time": "18:00", "label": "Коноктарды тосуу" },
+    { "time": "18:30", "label": "Нике аземи" },
+    { "time": "19:30", "label": "Той дасторкону" },
+    { "time": "23:00", "label": "Торт кесүү" }
+  ],
+  "dressCode": "Кечки стиль",
+  "musicUrl": "assets/music.mp3",
+  "colorTheme": {
+    "primary": "#f3e2b8",
+    "accent": "#cf9f3f",
+    "background": "#241016"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

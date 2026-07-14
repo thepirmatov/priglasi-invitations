@@ -1,0 +1,250 @@
+:root {
+  --color-primary: #3a332e;
+  --color-accent: #a98d6b;
+  --color-background: #faf8f5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  background: var(--color-background);
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+section {
+  padding: 2.5rem 1.75rem;
+  border-bottom: 1px solid rgba(169, 141, 107, 0.25);
+  text-align: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 2.5rem 0 3rem;
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+/* --- Hero: full-bleed photo, cursive signature names --- */
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4rem 1.5rem 3rem;
+  background-size: cover;
+  background-position: center;
+  background-color: #6b5d4f;
+  border-bottom: none;
+}
+
+.hero:not(.has-photo) {
+  background-image: linear-gradient(160deg, #a98d6b, #6b5d4f) !important;
+}
+
+.save-date-label {
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: 0.85rem;
+  margin: 0 0 1.5rem;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.couple-names {
+  font-family: 'Mrs Saint Delafield', cursive;
+  font-weight: 400;
+  font-size: 4.5rem;
+  line-height: 1.15;
+  color: #fff;
+  margin: 0 0 2rem;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.scroll-chevron {
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  opacity: 0.85;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: -0.5rem;
+}
+
+.scroll-chevron span {
+  margin-top: -0.9rem;
+}
+
+/* --- Floating music pill, sits below the hero photo --- */
+
+.music-toggle {
+  display: block;
+  margin: -1.75rem auto 0;
+  position: relative;
+  z-index: 2;
+  padding: 0.9rem 2rem;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-primary);
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.music-toggle.playing {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* --- Event info + rest of sections --- */
+
+.event-info {
+  padding-top: 3rem;
+  border-bottom: 1px solid rgba(169, 141, 107, 0.25);
+}
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  margin: 0 0 1rem;
+}
+
+.event-date {
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 1.4rem;
+  color: var(--color-accent);
+}
+
+.countdown span {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 0 0 1.1rem;
+}
+
+.venue-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
+.venue-address {
+  margin: 0 0 1.25rem;
+}
+
+.map-link {
+  display: inline-block;
+  padding: 0.6rem 1.75rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.map-link:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.45rem 0;
+}
+
+.schedule-list .time {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 300px;
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(169, 141, 107, 0.4);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+.attendance-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.attendance-options legend {
+  display: none;
+}
+
+.rsvp-form button[type='submit'] {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  text-align: center;
+  min-height: 1.2em;
+}

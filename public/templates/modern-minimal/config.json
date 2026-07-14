@@ -1,0 +1,23 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Тилек & Нуркыз",
+  "date": "2026-10-03",
+  "time": "18:00",
+  "venueName": "Silk Road Hall",
+  "venueAddress": "Чүй проспекти 120, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Silk+Road+Hall+Бишкек",
+  "schedule": [
+    { "time": "18:00", "label": "Коноктарды тосуу" },
+    { "time": "18:30", "label": "Салтанат" },
+    { "time": "19:30", "label": "Той дасторкону" }
+  ],
+  "dressCode": "Классикалык, кара/ак тондор",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/2.jpeg",
+  "colorTheme": {
+    "primary": "#1a1a1a",
+    "accent": "#b08968",
+    "background": "#ffffff"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

@@ -1,0 +1,14 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  # deploy-site-background.js reads template source files at runtime via fs
+  # (to assemble each customer's deploy zip); the bundler only includes files
+  # that are require()'d unless declared here.
+  included_files = ["public/templates/**", "public/shared/**"]
+
+[[redirects]]
+  from = "/"
+  to = "/storefront/index.html"
+  status = 200

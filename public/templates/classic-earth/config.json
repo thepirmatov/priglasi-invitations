@@ -1,0 +1,24 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Азамат & Жасмина",
+  "date": "2026-09-12",
+  "time": "17:00",
+  "venueName": "Көчмөндөр Айылы",
+  "venueAddress": "Сейл 1а, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Көчмөндөр+Айылы+Бишкек",
+  "schedule": [
+    { "time": "17:00", "label": "Коноктарды тосуу" },
+    { "time": "17:30", "label": "Салтанаттуу аземи" },
+    { "time": "18:00", "label": "Той дасторкону" },
+    { "time": "22:00", "label": "Кечки бөлүм" }
+  ],
+  "dressCode": "Пастель тондор, узун көйнөк сунушталат",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/3.jpeg",
+  "colorTheme": {
+    "primary": "#8a6d5c",
+    "accent": "#d9c3a9",
+    "background": "#faf6f1"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

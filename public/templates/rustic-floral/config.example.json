@@ -1,0 +1,23 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Эрлан & Салтанат",
+  "date": "2026-07-30",
+  "time": "17:00",
+  "venueName": "Botanica Garden",
+  "venueAddress": "Ботаника көчөсү 12, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Botanica+Garden+Бишкек",
+  "schedule": [
+    { "time": "17:00", "label": "Коноктарды тосуу" },
+    { "time": "17:30", "label": "Салтанат" },
+    { "time": "18:30", "label": "Той дасторкону" }
+  ],
+  "dressCode": "Жашыл жана крем тондор",
+  "musicUrl": "assets/music.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/1.jpeg",
+  "colorTheme": {
+    "primary": "#4a5a3a",
+    "accent": "#8a6d4f",
+    "background": "#fbf7ee"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

@@ -1,0 +1,22 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Бекзат & Нурила",
+  "date": "2026-10-10",
+  "time": "18:30",
+  "venueName": "Metropol Hall",
+  "venueAddress": "Манас проспекти 33, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Metropol+Hall+Бишкек",
+  "schedule": [
+    { "time": "18:30", "label": "Коноктарды тосуу" },
+    { "time": "19:00", "label": "Салтанат" },
+    { "time": "20:00", "label": "Той дасторкону" }
+  ],
+  "dressCode": "Классикалык кечки стиль",
+  "musicUrl": "assets/music.mp3",
+  "colorTheme": {
+    "primary": "#3a3632",
+    "accent": "#b8836f",
+    "background": "#f7f3ee"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

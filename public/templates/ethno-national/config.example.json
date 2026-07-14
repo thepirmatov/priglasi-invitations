@@ -1,0 +1,22 @@
+{
+  "eventType": "kyzUzatuu",
+  "coupleNames": "Бермет",
+  "date": "2026-09-05",
+  "time": "12:00",
+  "venueName": "Ала-Тоо улуттук үй",
+  "venueAddress": "Ош базар аймагы, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Ала-Тоо+улуттук+үй+Бишкек",
+  "schedule": [
+    { "time": "12:00", "label": "Коноктарды тосуу" },
+    { "time": "13:00", "label": "Узатуу расми" },
+    { "time": "14:00", "label": "Улуттук дасторкон" }
+  ],
+  "dressCode": "Улуттук кийим сунушталат",
+  "musicUrl": "assets/music.mp3",
+  "colorTheme": {
+    "primary": "#3a1e12",
+    "accent": "#b5432a",
+    "background": "#f4e9d8"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

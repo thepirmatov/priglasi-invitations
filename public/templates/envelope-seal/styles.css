@@ -1,0 +1,314 @@
+:root {
+  --color-primary: #f3e2b8;
+  --color-accent: #cf9f3f;
+  --color-background: #241016;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  background: var(--color-background);
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+/* --- Envelope reveal gate --- */
+
+.reveal-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: linear-gradient(160deg, #4a1625 0%, #2a0d16 55%, #3d1220 100%);
+  color: #e9c98a;
+  text-align: center;
+  padding: 2rem;
+  cursor: pointer;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  overflow: hidden;
+}
+
+.reveal-gate.revealed {
+  opacity: 0;
+  transform: scale(1.04);
+  pointer-events: none;
+}
+
+.envelope-fold {
+  position: absolute;
+  pointer-events: none;
+}
+
+.envelope-fold-top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56%;
+  clip-path: polygon(0 0, 100% 0, 50% 68%);
+  background: linear-gradient(200deg, rgba(255, 255, 255, 0.07), transparent 65%);
+}
+
+.envelope-fold-left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 52%;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.envelope-fold-right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 52%;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.gate-label {
+  position: relative;
+  z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.gate-script {
+  position: relative;
+  z-index: 1;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 3.25rem;
+  margin: 0;
+  color: #fff;
+}
+
+.wax-seal {
+  position: relative;
+  z-index: 2;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.15);
+  background: radial-gradient(circle at 35% 30%, #f3d98a, #c9962f 55%, #8a641c 100%);
+  color: #3d1220;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.gate-initials {
+  position: relative;
+  z-index: 1;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.2em;
+  margin: 0;
+  color: var(--color-accent);
+}
+
+/* --- Main content (revealed) --- */
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 1.75rem 4rem;
+}
+
+section {
+  padding: 3rem 0;
+  border-bottom: 1px solid rgba(207, 159, 63, 0.3);
+  text-align: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 3rem 0 0;
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.hero {
+  padding-top: 4rem;
+}
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  margin: 0 0 1.25rem;
+}
+
+.couple-names {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.75rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: #fff;
+}
+
+.event-date {
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 1.75rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 1.4rem;
+  color: var(--color-accent);
+}
+
+.countdown span {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+h2 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-weight: 400;
+  color: var(--color-accent);
+  margin: 0 0 1.25rem;
+}
+
+.venue-name {
+  font-size: 1.3rem;
+  margin: 0 0 0.35rem;
+  color: #fff;
+}
+
+.venue-address {
+  margin: 0 0 1.25rem;
+}
+
+.map-link {
+  display: inline-block;
+  padding: 0.6rem 1.75rem;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+}
+
+.map-link:hover {
+  background: var(--color-accent);
+  color: #241016;
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+}
+
+.schedule-list .time {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 320px;
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+
+.rsvp-form label {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(207, 159, 63, 0.4);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-primary);
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.attendance-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.attendance-options legend {
+  display: none;
+}
+
+.rsvp-form button {
+  padding: 0.7rem 1.5rem;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: #241016;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.rsvp-status {
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.music-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent);
+  background: var(--color-background);
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.music-toggle.playing {
+  background: var(--color-accent);
+  color: #241016;
+}

@@ -1,0 +1,81 @@
+{
+  "types": [
+    { "id": "classic", "label": "Классикалык" },
+    { "id": "envelope", "label": "Каттар" },
+    { "id": "photo", "label": "Сүрөт менен" },
+    { "id": "initials", "label": "Инициалдар" },
+    { "id": "illustrated", "label": "Иллюстрация" }
+  ],
+  "templates": [
+    {
+      "id": "classic-earth",
+      "name": "Classic Earth",
+      "categories": ["wedding"],
+      "type": "classic",
+      "screenshot": "screenshots/classic-earth.png"
+    },
+    {
+      "id": "modern-minimal",
+      "name": "Modern Minimal",
+      "categories": ["wedding"],
+      "type": "classic",
+      "screenshot": "screenshots/modern-minimal.png"
+    },
+    {
+      "id": "elegant-gold",
+      "name": "Elegant Gold",
+      "categories": ["wedding"],
+      "type": "classic",
+      "screenshot": "screenshots/elegant-gold.png"
+    },
+    {
+      "id": "pastel-romance",
+      "name": "Pastel Romance",
+      "categories": ["wedding", "kyzUzatuu"],
+      "type": "classic",
+      "screenshot": "screenshots/pastel-romance.png"
+    },
+    {
+      "id": "ethno-national",
+      "name": "Ethno National",
+      "categories": ["kyzUzatuu"],
+      "type": "classic",
+      "screenshot": "screenshots/ethno-national.png"
+    },
+    {
+      "id": "rustic-floral",
+      "name": "Rustic Floral",
+      "categories": ["wedding", "kyzUzatuu"],
+      "type": "classic",
+      "screenshot": "screenshots/rustic-floral.png"
+    },
+    {
+      "id": "envelope-seal",
+      "name": "Envelope Seal",
+      "categories": ["wedding"],
+      "type": "envelope",
+      "screenshot": "screenshots/envelope-seal.png"
+    },
+    {
+      "id": "photo-signature",
+      "name": "Photo Signature",
+      "categories": ["wedding"],
+      "type": "photo",
+      "screenshot": "screenshots/photo-signature.png"
+    },
+    {
+      "id": "initials-frame",
+      "name": "Initials Frame",
+      "categories": ["wedding"],
+      "type": "initials",
+      "screenshot": "screenshots/initials-frame.png"
+    },
+    {
+      "id": "illustrated-bloom",
+      "name": "Illustrated Bloom",
+      "categories": ["wedding"],
+      "type": "illustrated",
+      "screenshot": "screenshots/illustrated-bloom.png"
+    }
+  ]
+}

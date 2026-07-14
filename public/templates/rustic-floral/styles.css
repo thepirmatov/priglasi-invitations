@@ -1,0 +1,242 @@
+:root {
+  --color-primary: #4a5a3a;
+  --color-accent: #8a6d4f;
+  --color-background: #fbf7ee;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.1rem;
+  background: var(--color-background);
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+main {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 0 1.75rem 4rem;
+}
+
+section {
+  padding: 2.5rem 0;
+  border-bottom: 1px solid rgba(138, 109, 79, 0.3);
+  text-align: center;
+}
+
+section::after {
+  content: '🌿';
+  display: block;
+  margin-top: 1.5rem;
+  opacity: 0.6;
+}
+
+.rsvp::after,
+.footer::after {
+  content: '';
+}
+
+.footer {
+  text-align: center;
+  padding: 2.5rem 0 0;
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.hero {
+  padding-top: 4rem;
+}
+
+.hero.has-photo {
+  margin: 0 -1.75rem;
+  padding: 5rem 1.75rem 3rem;
+  border-bottom: none;
+  border-radius: 0 0 28px 28px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: clamp(420px, 78vh, 680px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.hero.has-photo::after {
+  content: '';
+  margin-top: 0;
+}
+
+.hero.has-photo .event-type,
+.hero.has-photo .couple-names,
+.hero.has-photo .event-date,
+.hero.has-photo .countdown,
+.hero.has-photo .countdown span {
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  margin: 0 0 1.25rem;
+}
+
+.couple-names {
+  font-size: 3.25rem;
+  font-style: italic;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+.event-date {
+  font-size: 1.1rem;
+  margin: 0 0 1.75rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 1.75rem;
+  font-size: 1.5rem;
+  color: var(--color-accent);
+}
+
+.countdown span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+}
+
+h2 {
+  font-size: 1.4rem;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 0 0 1.1rem;
+}
+
+.venue-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
+.venue-address {
+  margin: 0 0 1.25rem;
+}
+
+.map-link {
+  display: inline-block;
+  padding: 0.6rem 1.75rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-style: italic;
+}
+
+.map-link:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.45rem 0;
+}
+
+.schedule-list .time {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 300px;
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(138, 109, 79, 0.4);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+.attendance-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  font-style: italic;
+}
+
+.attendance-options legend {
+  display: none;
+}
+
+.rsvp-form button {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-family: inherit;
+  font-style: italic;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.music-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent);
+  background: var(--color-background);
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.music-toggle.playing {
+  background: var(--color-accent);
+  color: #fff;
+}
