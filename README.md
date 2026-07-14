@@ -5,6 +5,15 @@ wizard with a live preview, and submits the order via Telegram. A human collects
 Only then does an authorized manager reply `/bashta` (or `/create`) to the order notification in Telegram,
 which generates and deploys that couple's own Netlify site and replies with the live link.
 
+## Previewing the storefront on GitHub Pages
+
+`.github/workflows/pages.yml` publishes `public/` (storefront + all templates + catalog) as the Pages
+site root on every push to `main` — enable it once via **Settings → Pages → Source: GitHub Actions**.
+This is front-end-only: `netlify/functions/*` don't run on Pages, so the wizard's final "Telegram аркылуу
+жөнөтүү" submission (and RSVP forms on individual templates) will fail there with a network error. Use
+this for reviewing template designs and the wizard flow; use `netlify dev` (below) to test the full
+order → Telegram → deploy pipeline.
+
 ## Structure
 
 ```
