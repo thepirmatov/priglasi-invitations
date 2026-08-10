@@ -4,3 +4,5 @@ node_modules/
 .netlify/
 .DS_Store
 .claude/
+# Added by code-review-graph
+.code-review-graph/
