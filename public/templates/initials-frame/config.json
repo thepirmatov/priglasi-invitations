@@ -12,7 +12,7 @@
     { "time": "20:00", "label": "Той дасторкону" }
   ],
   "dressCode": "Классикалык кечки стиль",
-  "musicUrl": "assets/music.mp3",
+  "musicUrl": "../../shared/sample-music/track-1.mp3",
   "colorTheme": {
     "primary": "#3a3632",
     "accent": "#b8836f",

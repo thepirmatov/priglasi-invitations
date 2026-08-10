@@ -12,7 +12,7 @@
     { "time": "15:00", "label": "Дасторкон" }
   ],
   "dressCode": "Пастель тондор сунушталат",
-  "musicUrl": "assets/music.mp3",
+  "musicUrl": "../../shared/sample-music/track-2.mp3",
   "heroPhotoUrl": "../../shared/sample-photos/4.jpeg",
   "colorTheme": {
     "primary": "#6b4c5c",

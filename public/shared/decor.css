@@ -1,0 +1,152 @@
+/* Shared visual layer for every template: decorative SVG accents, scroll-in
+   animations, and clearer tap affordances (music button, RSVP feedback).
+   Loaded by every template's index.html alongside its own styles.css, which
+   still owns layout/color/typography - this file only adds motion + accents
+   on top, and deliberately avoids touching layout properties that would
+   fight each template's own CSS (the .music-toggle block below is the one
+   intentional exception - see comment there). */
+
+/* ---------- Decorative SVG accents (see decor.js) ---------- */
+
+.decor {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  color: var(--color-accent);
+  opacity: 0.9;
+}
+
+.decor svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.decor-sm { width: 28px; height: 20px; }
+.decor-md { width: 44px; height: 30px; }
+.decor-lg { width: 64px; height: 42px; }
+
+/* ---------- Motion ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Transform only, never opacity: this is the couple's name/date/countdown,
+     the single most important content on the page. animation-fill-mode:both
+     would hold it at opacity:0 until the browser's animation clock actually
+     starts, which can stall well past 0.9s (a backgrounded tab on load, a
+     slow first paint) and strand the hero invisible - a purely cosmetic
+     slide-up can't do that since the element's own normal styles (fully
+     opaque) always apply before/after the animation runs. */
+  .hero {
+    animation: decor-slide-up 0.9s ease;
+  }
+
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes decor-slide-up {
+  from { transform: translateY(10px); }
+  to { transform: none; }
+}
+
+/* Buttons/links feel more "pressable" - reassures a user their tap registered. */
+.rsvp-form button,
+.map-link,
+.music-toggle {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.rsvp-form button:active,
+.map-link:active,
+.music-toggle:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Music toggle: icon + always-visible label ---------- */
+/* template-core.js rebuilds this button's contents into
+   <span class="music-icon"> + <span class="music-label"> on every template
+   (see setupMusic), replacing whatever icon-only glyph or bare text each
+   template previously carried - non-technical users read a two-word label
+   far more reliably than an unlabeled note-glyph button. Each template's own
+   styles.css still owns position/color/border/background; this block only
+   overrides the fixed circle sizing so the label has room to sit next to the
+   icon, which is why it needs !important rather than 12 separate CSS edits. */
+.music-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.4em;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.55em 0.9em !important;
+  border-radius: 999px !important;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.music-toggle .music-icon {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.music-toggle .music-label {
+  font-size: 0.9em;
+}
+
+/* Gentle glow so a first-time visitor notices the button is tappable; removed
+   the moment they interact with it (see setupMusic in template-core.js). */
+.music-toggle.needs-attention {
+  animation: decor-pulse 2.2s ease-in-out infinite;
+}
+
+/* Transform/opacity only (not color-based) so it renders consistently across
+   every template's light and dark palettes without needing color-mix(). */
+@keyframes decor-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.07); opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-toggle.needs-attention { animation: none; }
+}
+
+/* Wax-seal reveal gate (envelope-seal): reinforce that it's tappable. */
+.wax-seal {
+  animation: decor-pulse 2.4s ease-in-out infinite;
+}
+
+/* ---------- RSVP feedback ---------- */
+
+.rsvp-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+}
+
+.rsvp-status .status-icon {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rsvp-status.success .status-icon {
+    animation: decor-pop 0.4s ease;
+  }
+}
+
+@keyframes decor-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.rsvp-status.success { color: #2e7d32; }
+.rsvp-status.error { color: #b3261e; }

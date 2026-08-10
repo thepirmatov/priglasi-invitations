@@ -13,7 +13,7 @@
     { "time": "23:00", "label": "Кечки бөлүм" }
   ],
   "dressCode": "Кечки стиль, алтын жана кара тондор",
-  "musicUrl": "assets/music.mp3",
+  "musicUrl": "../../shared/sample-music/track-2.mp3",
   "heroPhotoUrl": "../../shared/sample-photos/1.jpeg",
   "colorTheme": {
     "primary": "#e9d9a8",

@@ -12,7 +12,7 @@
     { "time": "18:30", "label": "Той дасторкону" }
   ],
   "dressCode": "Жайлык, ачык түстөр",
-  "musicUrl": "assets/music.mp3",
+  "musicUrl": "../../shared/sample-music/track-3.m4a",
   "heroPhotoUrl": "../../shared/sample-photos/3.jpeg",
   "colorTheme": {
     "primary": "#3a332e",

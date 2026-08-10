@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../../shared/decor.css" />
 </head>
 <body>
   <audio id="bg-music" loop preload="none"></audio>
@@ -27,6 +28,7 @@
     </section>
 
     <section class="details">
+      <div class="decor decor-sm" data-decor="divider"></div>
       <h2>Той кайда болот</h2>
       <p id="venue-name" class="venue-name"></p>
       <p id="venue-address" class="venue-address"></p>
@@ -44,6 +46,7 @@
     </section>
 
     <section class="rsvp">
+      <div class="decor decor-md" data-decor="rings"></div>
       <h2>Катышасызбы?</h2>
       <form id="rsvp-form" class="rsvp-form">
         <label for="guest-name">Сиздин аты-жөнүңүз</label>
@@ -65,6 +68,7 @@
     </footer>
   </main>
 
+  <script src="../../shared/decor.js"></script>
   <script src="../../shared/template-core.js"></script>
 </body>
 </html>

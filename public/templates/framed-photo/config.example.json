@@ -1,7 +1,7 @@
 {
   "eventType": "wedding",
   "coupleNames": "Акылтай & Толкун",
-  "date": "2026-07-30",
+  "date": "2026-12-12",
   "time": "17:00",
   "venueName": "«ARNA»",
   "venueAddress": "Курманжан Датка көчөсү, 152, Бишкек ш.",
@@ -13,7 +13,7 @@
   ],
   "dressCode": "Кечки стиль",
   "hostsNames": "Өмүрбек & Роза",
-  "musicUrl": "assets/music.mp3",
+  "musicUrl": "../../shared/sample-music/track-3.m4a",
   "heroPhotoUrl": "photos/hero.jpg",
   "collagePhotos": [
     "photos/collage-1.jpg",

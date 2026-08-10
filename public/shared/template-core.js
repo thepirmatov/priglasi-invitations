@@ -168,6 +168,51 @@ function setupSideLabels(coupleNames) {
   if (sideRadios[1]) sideRadios[1].value = nameB || '';
 }
 
+let guestCardInitialized = false;
+// Opt-in (from ariet-wedding2's original single-purpose "guest name card"
+// generator, folded in here as a reusable capability): a template with
+// #guest-card-name-input + #guest-card-download + #guest-card-target lets a
+// guest type their own name, see it appear live inside #guest-card-name-display,
+// and download a personalized JPEG snapshot of #guest-card-target (typically
+// the hero) via html2canvas - purely a client-side image export, nothing is
+// sent anywhere.
+function setupGuestCard() {
+  const input = document.getElementById('guest-card-name-input');
+  const button = document.getElementById('guest-card-download');
+  const target = document.getElementById('guest-card-target');
+  const nameDisplay = document.getElementById('guest-card-name-display');
+  if (!input || !button || !target || guestCardInitialized) return;
+  guestCardInitialized = true;
+
+  const placeholder = (nameDisplay && nameDisplay.textContent) || 'Урматтуу конок';
+  input.addEventListener('input', () => {
+    if (nameDisplay) nameDisplay.textContent = input.value.trim() || placeholder;
+  });
+
+  button.addEventListener('click', async () => {
+    if (!window.html2canvas) return;
+    const guestName = input.value.trim() || 'chakyruu';
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Даярдалууда...';
+    try {
+      const canvas = await window.html2canvas(target, { scale: 3, useCORS: true, backgroundColor: null });
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.download = `${guestName}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error(err);
+      alert('Ката кетти, кайра аракет кылыңыз.');
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  });
+}
+
 let revealGateInitialized = false;
 // Opt-in "open to reveal" interaction (envelope-seal's wax seal, etc.): the
 // template marks its cover screen with #reveal-gate; clicking it reveals the
@@ -191,6 +236,47 @@ function setupRevealGate() {
       audio.play().then(() => musicToggle && musicToggle.classList.add('playing')).catch(() => {});
     }
   }, { once: true });
+}
+
+let scrollRevealInitialized = false;
+// Fades/slides each content section in as the guest scrolls to it - purely
+// additive (adds a class, observes), so it needs no changes to any
+// template's HTML. Guarded to run once: render() re-runs on every wizard
+// keystroke in preview mode, and re-observing would just re-add the same
+// elements to the same observer.
+function setupScrollReveal() {
+  if (scrollRevealInitialized) return;
+  scrollRevealInitialized = true;
+  if (!window.IntersectionObserver || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const sections = document.querySelectorAll('main > section:not(.hero)');
+  if (!sections.length) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  sections.forEach((section) => {
+    section.classList.add('reveal-on-scroll');
+    observer.observe(section);
+  });
+
+  // Safety net: guarantees content can never stay invisible indefinitely if
+  // the observer never fires for some reason (throttled background tab,
+  // an odd viewport/iframe edge case, etc.) - reliability matters far more
+  // here than the reveal-on-scroll effect for whatever is still off-screen.
+  setTimeout(() => {
+    sections.forEach((section) => section.classList.add('is-visible'));
+    observer.disconnect();
+  }, 4000);
 }
 
 function formatDate(dateStr) {
@@ -270,11 +356,43 @@ function startCountdown(dateStr, timeStr) {
   countdownIntervalId = setInterval(tick, 1000);
 }
 
+function setMusicToggleLabel(toggle, playing) {
+  const label = playing ? 'Ырды токтотуу' : 'Ырды угуу';
+  toggle.setAttribute('aria-label', label);
+  const labelEl = toggle.querySelector('.music-label');
+  if (labelEl) labelEl.textContent = label;
+}
+
 let musicInitialized = false;
+let musicToggleDiscovered = false;
 function setupMusic(musicUrl) {
   const audio = document.getElementById('bg-music');
   const toggle = document.getElementById('music-toggle');
   if (!audio || !toggle) return;
+
+  if (!musicInitialized) {
+    musicInitialized = true;
+    // Every template previously shipped this as either an icon-only note glyph
+    // or (photo-signature only) plain text - rebuild it the same way everywhere
+    // into an icon plus a short, always-visible label (see .music-toggle in
+    // decor.css for the sizing), since non-technical guests read a two-word
+    // label far more reliably than an unlabeled symbol.
+    toggle.innerHTML = '<span class="music-icon" aria-hidden="true">♪</span><span class="music-label"></span>';
+    setMusicToggleLabel(toggle, false);
+    toggle.addEventListener('click', () => {
+      musicToggleDiscovered = true;
+      toggle.classList.remove('needs-attention');
+      if (audio.paused) {
+        audio.play();
+        toggle.classList.add('playing');
+        setMusicToggleLabel(toggle, true);
+      } else {
+        audio.pause();
+        toggle.classList.remove('playing');
+        setMusicToggleLabel(toggle, false);
+      }
+    });
+  }
 
   if (!musicUrl) {
     toggle.style.display = 'none';
@@ -285,20 +403,12 @@ function setupMusic(musicUrl) {
     audio.pause();
     audio.src = musicUrl;
     toggle.classList.remove('playing');
+    setMusicToggleLabel(toggle, false);
   }
-
-  if (!musicInitialized) {
-    musicInitialized = true;
-    toggle.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play();
-        toggle.classList.add('playing');
-      } else {
-        audio.pause();
-        toggle.classList.remove('playing');
-      }
-    });
-  }
+  // Gentle pulse until the guest notices the button is tappable; harmless to
+  // recompute on every call since preview mode re-runs render() on every
+  // wizard keystroke and this must stay off once actually discovered.
+  toggle.classList.toggle('needs-attention', !musicToggleDiscovered && audio.paused);
 }
 
 let rsvpInitialized = false;
@@ -316,6 +426,10 @@ function setupRsvpForm(telegramChatId, rsvpEndpoint) {
   rsvpInitialized = true;
 
   const status = document.getElementById('rsvp-status');
+  if (status) {
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+  }
   const submitButton = form.querySelector('button[type="submit"]');
 
   form.addEventListener('submit', async (event) => {
@@ -325,6 +439,7 @@ function setupRsvpForm(telegramChatId, rsvpEndpoint) {
     if (!guestName || !attendance) return;
 
     submitButton.disabled = true;
+    status.classList.remove('success', 'error');
     status.textContent = 'Жөнөтүлүүдө...';
 
     // guestCount/side are optional, only present on templates with the
@@ -343,12 +458,14 @@ function setupRsvpForm(telegramChatId, rsvpEndpoint) {
         body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-      status.textContent = 'Рахмат! Жообуңуз жөнөтүлдү.';
+      status.innerHTML = '<span class="status-icon" aria-hidden="true">✓</span> Рахмат! Жообуңуз жөнөтүлдү.';
+      status.classList.add('success');
       form.reset();
       const guestCountBlock = document.getElementById('guest-count-block');
       if (guestCountBlock) guestCountBlock.classList.add('hidden');
     } catch (err) {
-      status.textContent = 'Ката кетти, кайра аракет кылыңыз.';
+      status.innerHTML = '<span class="status-icon" aria-hidden="true">!</span> Ката кетти, кайра аракет кылыңыз.';
+      status.classList.add('error');
     } finally {
       submitButton.disabled = false;
     }
@@ -373,6 +490,8 @@ function render(config) {
   setupGuestCountStepper();
   setupSideLabels(config.coupleNames);
   setupRevealGate();
+  setupGuestCard();
+  setupScrollReveal();
 }
 
 window.TemplateCore = { render };

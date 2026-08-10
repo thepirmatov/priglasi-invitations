@@ -12,7 +12,7 @@
     { "time": "19:30", "label": "Той дасторкону" }
   ],
   "dressCode": "Классикалык, кара/ак тондор",
-  "musicUrl": "assets/music.mp3",
+  "musicUrl": "../../shared/sample-music/track-3.m4a",
   "heroPhotoUrl": "../../shared/sample-photos/2.jpeg",
   "colorTheme": {
     "primary": "#1a1a1a",
