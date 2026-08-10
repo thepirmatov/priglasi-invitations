@@ -4,12 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PRIGLASI — Чакырууну тандаңыз</title>
+  <meta name="description" content="Той жана кыз узатуу үчүн онлайн чакыруу түзүңүз: дизайнды тандап, өз маалыматыңыз менен ыңгайлаштырып, бир нече мүнөттө даяр шилтеме алыңыз." />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="canonical" href="/storefront/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PRIGLASI" />
+  <meta property="og:title" content="PRIGLASI — Чакырууну тандаңыз" />
+  <meta property="og:description" content="Той жана кыз узатуу үчүн онлайн чакыруу түзүңүз: дизайнды тандап, өз маалыматыңыз менен ыңгайлаштырып, бир нече мүнөттө даяр шилтеме алыңыз." />
+  <meta property="og:image" content="/catalog/screenshots/pastel-romance.png" />
+  <meta property="og:url" content="/storefront/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="app">
     <!-- Screen 1: category -->
     <section id="screen-category" class="screen">
+      <div id="draft-banner" class="draft-banner hidden">
+        <p>Сиз мурда баштаган чакырууну таптык. Аны улантасызбы?</p>
+        <div class="draft-banner-actions">
+          <button type="button" id="draft-continue" class="primary-button">Улантуу</button>
+          <button type="button" id="draft-discard" class="secondary-button">Жаңыдан баштоо</button>
+        </div>
+      </div>
       <h1>Кайсы иш-чара үчүн?</h1>
       <div class="category-cards">
         <button class="category-card" data-category="wedding">
@@ -38,42 +57,42 @@
 
     <!-- Screen 3: wizard -->
     <section id="screen-wizard" class="screen hidden">
-      <button class="back-button" data-back="screen-carousel">← Артка</button>
-
       <div class="preview-wrap">
         <iframe id="preview-frame" title="Алдын ала көрүү"></iframe>
       </div>
+      <button class="back-button wizard-back-button" data-back="screen-carousel">← Артка</button>
 
-      <div class="wizard-steps">
+      <div class="wizard-panel">
+        <div class="wizard-steps">
         <div class="wizard-step" data-step="0">
           <h2>Аты-жөнү</h2>
-          <label>Аты-жөнү (мис. Азамат & Жасмина)</label>
+          <label for="field-coupleNames">Аты-жөнү (мис. Азамат & Жасмина)</label>
           <input type="text" id="field-coupleNames" />
-          <label>Аты-жөнүнүн артындагы сүрөт (милдеттүү эмес)</label>
+          <label for="field-heroPhoto-file">Аты-жөнүнүн артындагы сүрөт (милдеттүү эмес)</label>
           <input type="file" id="field-heroPhoto-file" accept="image/*" />
           <input type="hidden" id="field-heroPhotoUrl" />
           <div id="heroPhoto-preview-wrap" class="photo-preview-wrap hidden">
             <img id="heroPhoto-preview" class="photo-preview" alt="Тандалган сүрөт" />
             <button type="button" id="heroPhoto-remove" class="photo-preview-remove">Өчүрүү</button>
           </div>
-          <p id="heroPhoto-status" class="photo-upload-status"></p>
+          <p id="heroPhoto-status" class="photo-upload-status" role="status" aria-live="polite"></p>
         </div>
 
         <div class="wizard-step" data-step="1">
           <h2>Күнү жана убактысы</h2>
-          <label>Күнү</label>
+          <label for="field-date">Күнү</label>
           <input type="date" id="field-date" />
-          <label>Убактысы</label>
+          <label for="field-time">Убактысы</label>
           <input type="time" id="field-time" />
         </div>
 
         <div class="wizard-step" data-step="2">
           <h2>Той кайда болот</h2>
-          <label>Мейманкана/аймактын аты</label>
+          <label for="field-venueName">Мейманкана/аймактын аты</label>
           <input type="text" id="field-venueName" />
-          <label>Дареги</label>
+          <label for="field-venueAddress">Дареги</label>
           <input type="text" id="field-venueAddress" />
-          <label>Карта шилтемеси (Google Maps)</label>
+          <label for="field-mapUrl">Карта шилтемеси (Google Maps)</label>
           <input type="text" id="field-mapUrl" placeholder="https://maps.google.com/..." />
         </div>
 
@@ -85,38 +104,46 @@
 
         <div class="wizard-step" data-step="4">
           <h2>Дресс-код</h2>
+          <label for="field-dressCode">Дресс-код (мис. Кара/ак түс)</label>
           <input type="text" id="field-dressCode" />
         </div>
 
         <div class="wizard-step" data-step="5">
           <h2>Кошумча</h2>
-          <label>Тойдун ээлери (ата-энелер, милдеттүү эмес)</label>
+          <label for="field-hostsNames">Тойдун ээлери (ата-энелер, милдеттүү эмес)</label>
           <input type="text" id="field-hostsNames" placeholder="Мис. Өмүрбек & Роза" />
-          <label>Сүрөттөр жыйнагы (бир нече сүрөт, милдеттүү эмес)</label>
+          <label for="field-collagePhotos-file">Сүрөттөр жыйнагы (бир нече сүрөт, милдеттүү эмес)</label>
           <input type="file" id="field-collagePhotos-file" accept="image/*" multiple />
           <div id="collagePhotos-preview-wrap" class="collage-preview-wrap"></div>
-          <p id="collagePhotos-status" class="photo-upload-status"></p>
+          <p id="collagePhotos-status" class="photo-upload-status" role="status" aria-live="polite"></p>
         </div>
 
         <div class="wizard-step" data-step="6">
           <h2>Музыка</h2>
-          <label>Ырдын шилтемеси (же четке кийин бизге түздөн-түз жөнөтөсүз)</label>
-          <input type="text" id="field-musicUrl" placeholder="https://..." />
+          <label for="field-music-file">Ыр файлын тандаңыз (милдеттүү эмес, максимум 4МБ)</label>
+          <input type="file" id="field-music-file" accept="audio/*" />
+          <input type="hidden" id="field-musicUrl" />
+          <div id="music-preview-wrap" class="photo-preview-wrap hidden">
+            <audio id="music-preview" controls></audio>
+            <button type="button" id="music-remove" class="photo-preview-remove">Өчүрүү</button>
+          </div>
+          <p id="music-status" class="photo-upload-status" role="status" aria-live="polite"></p>
         </div>
 
         <div class="wizard-step" data-step="7">
           <h2>Байланыш маалыматы</h2>
-          <label>Сиздин атыңыз</label>
+          <label for="field-customerName">Сиздин атыңыз</label>
           <input type="text" id="field-customerName" />
-          <label>Телефон/Telegram</label>
+          <label for="field-customerContact">Телефон/Telegram</label>
           <input type="text" id="field-customerContact" placeholder="+996 XXX XXX XXX же @username" />
         </div>
-      </div>
+        </div>
 
-      <div class="wizard-nav">
-        <button id="wizard-prev" class="secondary-button">Артка</button>
-        <button id="wizard-next" class="primary-button">Кийинки</button>
-        <button id="wizard-submit" class="primary-button hidden">Telegram аркылуу жөнөтүү</button>
+        <div class="wizard-nav">
+          <button id="wizard-prev" class="secondary-button">Артка</button>
+          <button id="wizard-next" class="primary-button">Кийинки</button>
+          <button id="wizard-submit" class="primary-button hidden">Telegram аркылуу жөнөтүү</button>
+        </div>
       </div>
     </section>
 
@@ -128,6 +155,7 @@
     </section>
   </div>
 
+  <script src="persist.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

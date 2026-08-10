@@ -59,9 +59,13 @@ customer site can call its own relative `/.netlify/functions/*`.
    the comma-separated list in `MANAGER_TELEGRAM_IDS` — this is the authorization boundary for `/bashta`.
 4. Create a [Netlify personal access token](https://app.netlify.com/user/applications) and put it in
    `NETLIFY_AUTH_TOKEN` — this is what lets `deploy-site-background.js` create a new site per order.
-5. Register the webhook once the site is deployed:
+5. Generate a random value (e.g. `openssl rand -hex 32`) and put it in `INTERNAL_FUNCTION_SECRET` —
+   `deploy-site-background.js` is a public URL with no other way to verify a request actually came from
+   `telegram-webhook.js` (i.e. from an approved `/bashta`) rather than from anyone who sends a guessed or
+   leaked `orderId` directly. Without this set, `deploy-site-background.js` rejects every request.
+6. Register the webhook once the site is deployed:
    `https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=<your-site>/.netlify/functions/telegram-webhook`
-6. Set all four variables in Netlify's dashboard (Site settings → Environment variables) for production, and
+7. Set all five variables in Netlify's dashboard (Site settings → Environment variables) for production, and
    in `.env` locally for `netlify dev` (already gitignored).
 
 ## Adding or editing a template design
@@ -98,13 +102,33 @@ skip on templates where it doesn't fit the design):
   while "attending" is selected; `#side-label-a`/`#side-label-b` (paired with `input[name="side"]`) get
   filled in from the couple's own names rather than being hardcoded per template. Both are included in the
   RSVP's Telegram message by `rsvp.js` when present.
+- **Personalized guest card download** — `#guest-card-name-input` + `#guest-card-download` +
+  `#guest-card-target` lets a guest type their own name (mirrored live into `#guest-card-name-display`) and
+  download a JPEG snapshot of `#guest-card-target` (typically the hero) via `html2canvas`, vendored at
+  `public/shared/vendor/html2canvas.min.js` rather than pulled from a CDN. Purely client-side, nothing is
+  sent anywhere. `deploy-site-background.js` only bundles the ~190KB vendor file into a customer's deploy
+  zip when their template actually references it, so templates without this capability aren't penalized.
 
-### Photo uploads
+### Photo and music uploads
 
-The wizard's hero-photo and collage-photo fields are real file pickers, not URL text fields — a selected
+The wizard's hero-photo, collage-photo, and music fields are all real file pickers, not URL text fields —
+customers who don't know how to get a direct file link (which is most of them) just pick a file. A selected
 photo is resized (long edge capped, re-encoded as JPEG) and embedded as a data URL client-side in
-`compressImageFile()` (`public/storefront/app.js`), with no separate storage/CDN backend. This keeps typical
-uploads to a couple hundred KB, comfortably inside Netlify Functions' request-body limits.
+`compressImageFile()` (`public/storefront/app.js`), keeping typical uploads to a couple hundred KB. Audio
+can't be shrunk the same way (no simple "resize dimensions" trick), so `readFileAsDataUrl()` just reads the
+file as-is, gated by `MAX_MUSIC_BYTES` (4MB) - a customer whose song is bigger gets a clear message asking
+for a smaller file or a shorter clip, rather than a cryptic failure. `MAX_PAYLOAD_BYTES` (the final combined
+guard before submit) accounts for all of this together, since base64 encoding itself adds ~33% on top of
+whatever raw file sizes made it through the individual caps.
+
+### Draft persistence
+
+The wizard autosaves the customer's in-progress selections (including uploaded photo/music data URLs) to
+IndexedDB (`public/storefront/persist.js`) - not localStorage, since a photo + a 4MB song can add up to more
+than localStorage's typical per-origin quota. On a fresh page load, if a saved draft exists, a banner offers
+to resume it or start over. The draft is cleared automatically once an order is successfully submitted.
+Every persistence call fails silently (falls back to no persistence) since this is a convenience feature - a
+storage error must never block the wizard itself.
 
 ## Running locally
 
@@ -128,8 +152,6 @@ npm run screenshots
 
 ## Known limitations (by design, this phase)
 
-- Music is a link the customer pastes in, not a file upload — actual track files still go to the manager
-  directly, matching how the original manual process worked.
 - The couple's own `telegramChatId` (used for **guest RSVP** notifications on their deployed site, separate
   from the internal manager chat) isn't collected by the wizard — it's set after deploy once the couple has
   their own bot chat, same onboarding step as before.

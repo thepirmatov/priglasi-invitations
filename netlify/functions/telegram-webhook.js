@@ -68,7 +68,13 @@ exports.handler = async (event) => {
   const siteUrl = process.env.URL || process.env.DEPLOY_URL || '';
   await fetch(`${siteUrl}/.netlify/functions/deploy-site-background`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      // deploy-site-background has no other way to tell a manager's approved /bashta
+      // apart from anyone who POSTs a guessed/leaked orderId directly - see INTERNAL_FUNCTION_SECRET
+      // in deploy-site-background.js.
+      'X-Internal-Secret': process.env.INTERNAL_FUNCTION_SECRET || '',
+    },
     body: JSON.stringify({ orderId, chatId: message.chat.id, replyToMessageId: message.message_id }),
   });
 

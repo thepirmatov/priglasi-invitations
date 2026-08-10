@@ -4,7 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'public', 'templates');
-const SHARED_CORE_PATH = path.join(__dirname, '..', '..', 'public', 'shared', 'template-core.js');
+const SHARED_DIR = path.join(__dirname, '..', '..', 'public', 'shared');
+const SHARED_CORE_PATH = path.join(SHARED_DIR, 'template-core.js');
+const SHARED_DECOR_JS_PATH = path.join(SHARED_DIR, 'decor.js');
+const SHARED_DECOR_CSS_PATH = path.join(SHARED_DIR, 'decor.css');
+const HTML2CANVAS_PATH = path.join(SHARED_DIR, 'vendor', 'html2canvas.min.js');
 
 // Kyrgyz/Russian Cyrillic -> Latin, since couple names (the basis for the
 // subdomain slug) are almost always in Cyrillic and Netlify site names must
@@ -29,11 +33,21 @@ function slugify(str, orderId) {
 async function buildDeployZip(templateId, config) {
   const templateDir = path.join(TEMPLATES_DIR, templateId);
   let html = fs.readFileSync(path.join(templateDir, 'index.html'), 'utf8');
-  // Templates reference the shared core two directories up for local dev;
-  // the deploy bundle is flat, so rewrite the script path.
-  html = html.replace('../../shared/template-core.js', 'template-core.js');
+  // Templates reference shared/ two directories up for local dev; the deploy
+  // bundle is flat, so rewrite every shared/ path to sit next to index.html.
+  html = html
+    .replace('../../shared/template-core.js', 'template-core.js')
+    .replace('../../shared/decor.js', 'decor.js')
+    .replace('../../shared/decor.css', 'decor.css')
+    .replace('../../shared/vendor/html2canvas.min.js', 'html2canvas.min.js');
   const css = fs.readFileSync(path.join(templateDir, 'styles.css'), 'utf8');
   const coreJs = fs.readFileSync(SHARED_CORE_PATH, 'utf8');
+  const decorJs = fs.readFileSync(SHARED_DECOR_JS_PATH, 'utf8');
+  const decorCss = fs.readFileSync(SHARED_DECOR_CSS_PATH, 'utf8');
+  // Only the templates with the guest-card-download capability (see
+  // setupGuestCard in template-core.js) reference html2canvas, so only bundle
+  // this ~190KB vendor file into their deploy zip, not every customer's site.
+  const needsHtml2Canvas = html.includes('html2canvas.min.js');
 
   // This deployed site has no netlify/functions of its own (see comment on
   // rsvpEndpoint below), so config.json must carry an absolute endpoint
@@ -44,6 +58,9 @@ async function buildDeployZip(templateId, config) {
   zip.file('index.html', html);
   zip.file('styles.css', css);
   zip.file('template-core.js', coreJs);
+  zip.file('decor.js', decorJs);
+  zip.file('decor.css', decorCss);
+  if (needsHtml2Canvas) zip.file('html2canvas.min.js', fs.readFileSync(HTML2CANVAS_PATH));
   zip.file('config.json', JSON.stringify(configWithRsvp, null, 2));
   return zip.generateAsync({ type: 'nodebuffer' });
 }
@@ -77,6 +94,16 @@ async function sendTelegramMessage(botToken, chatId, replyToMessageId, text) {
 }
 
 exports.handler = async (event) => {
+  // This endpoint is public (Netlify Functions have no built-in caller auth), and would
+  // otherwise let anyone who sends a valid orderId trigger a live deploy + mark the order
+  // "completed" without a manager ever approving it via /bashta. telegram-webhook.js is the
+  // only legitimate caller, and proves that by echoing this shared secret.
+  const expectedSecret = process.env.INTERNAL_FUNCTION_SECRET;
+  const providedSecret = event.headers && (event.headers['x-internal-secret'] || event.headers['X-Internal-Secret']);
+  if (!expectedSecret || providedSecret !== expectedSecret) {
+    return { statusCode: 403, body: '' };
+  }
+
   const { orderId, chatId, replyToMessageId } = JSON.parse(event.body || '{}');
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const netlifyToken = process.env.NETLIFY_AUTH_TOKEN;

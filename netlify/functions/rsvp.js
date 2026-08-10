@@ -1,3 +1,5 @@
+const { getClientIp, checkRateLimit, isAllowedOrigin } = require('./lib/security');
+
 const ATTENDANCE_LABELS = {
   yes: 'Катышат',
   no: 'Катыша албайт',
@@ -6,6 +8,18 @@ const ATTENDANCE_LABELS = {
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  // Every deployed customer site calls this from its own *.netlify.app subdomain (see
+  // README "Why each customer site is self-contained"), so same-origin alone isn't enough here.
+  // NOTE: if a couple's site later gets a custom domain, this suffix check needs updating.
+  if (!isAllowedOrigin(event, ['.netlify.app'])) {
+    return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+  }
+
+  const withinLimit = await checkRateLimit(`rsvp:${getClientIp(event)}`, { limit: 15, windowMs: 15 * 60 * 1000 });
+  if (!withinLimit) {
+    return { statusCode: 429, body: JSON.stringify({ error: 'Too many requests, try again later' }) };
   }
 
   let payload;

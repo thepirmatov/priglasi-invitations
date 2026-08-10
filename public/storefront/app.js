@@ -1,4 +1,15 @@
 const STEP_COUNT = 8;
+const MAX_COLLAGE_PHOTOS = 15;
+// A raw MP3 people actually upload (not link) is much bigger than a compressed
+// photo and can't be shrunk the same way (no simple "resize dimensions" trick
+// for audio), so it gets its own explicit cap - clearly enforced up front
+// rather than only failing later at the total-payload check below.
+const MAX_MUSIC_BYTES = 4 * 1024 * 1024;
+// Netlify Functions cap synchronous request bodies at 6MB; order.js is synchronous
+// (it notifies Telegram inline), so the whole JSON payload - hero photo, every
+// collage photo, and the music file, all base64 (~33% bigger than raw) - has to
+// fit under that with margin to spare.
+const MAX_PAYLOAD_BYTES = 5.5 * 1024 * 1024;
 // Forces a fresh image fetch each page load instead of a stale cached PNG
 // from before a template's screenshot was regenerated.
 const CACHE_BUST = Date.now();
@@ -45,6 +56,18 @@ function compressImageFile(file, maxDimension = 1600, quality = 0.82) {
       img.onerror = () => reject(new Error('Image failed to decode'));
       img.src = e.target.result;
     };
+    reader.onerror = () => reject(new Error('File failed to read'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Plain FileReader wrapper, no re-encoding - unlike photos, an audio file
+// can't be shrunk with a simple canvas resize, so MAX_MUSIC_BYTES above is
+// the only size control (enforced by the caller before this even runs).
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
     reader.onerror = () => reject(new Error('File failed to read'));
     reader.readAsDataURL(file);
   });
@@ -120,6 +143,7 @@ function renderTypeTabs(availableTypes) {
     const tab = document.createElement('button');
     tab.type = 'button';
     tab.className = 'type-tab';
+    tab.dataset.typeId = type.id;
     tab.textContent = type.label;
     tab.classList.toggle('active', type.id === state.selectedType);
     tab.addEventListener('click', () => {
@@ -201,6 +225,8 @@ useTemplateButton.addEventListener('click', async () => {
   clearWizardFields();
   document.getElementById('field-heroPhoto-file').value = '';
   document.getElementById('field-collagePhotos-file').value = '';
+  document.getElementById('field-music-file').value = '';
+  setMusicPreview('');
   // Pre-fill with the template's own demo photo so the live preview matches
   // what the carousel just showed - otherwise the preview looks broken the
   // moment the customer arrives. Stripped back out at submit time unless the
@@ -268,6 +294,49 @@ document.getElementById('heroPhoto-remove').addEventListener('click', () => {
   postPreviewUpdate();
 });
 
+function setMusicPreview(url) {
+  const wrap = document.getElementById('music-preview-wrap');
+  const audio = document.getElementById('music-preview');
+  if (url) {
+    audio.src = url;
+    wrap.classList.remove('hidden');
+  } else {
+    audio.removeAttribute('src');
+    wrap.classList.add('hidden');
+  }
+}
+
+document.getElementById('field-music-file').addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('music-status');
+  if (file.size > MAX_MUSIC_BYTES) {
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    const maxMb = (MAX_MUSIC_BYTES / (1024 * 1024)).toFixed(0);
+    status.textContent = `Бул ыр өтө чоң (${sizeMb}МБ). ${maxMb}МБга чейин файл тандаңыз же кыскараак үзүндү колдонуңуз.`;
+    event.target.value = '';
+    return;
+  }
+  status.textContent = 'Иштелүүдө...';
+  try {
+    const dataUrl = await readFileAsDataUrl(file);
+    document.getElementById('field-musicUrl').value = dataUrl;
+    setMusicPreview(dataUrl);
+    status.textContent = '';
+    postPreviewUpdate();
+  } catch (err) {
+    console.error(err);
+    status.textContent = 'Ырды иштетүүдө ката кетти, кайра аракет кылыңыз.';
+  }
+});
+
+document.getElementById('music-remove').addEventListener('click', () => {
+  document.getElementById('field-musicUrl').value = '';
+  document.getElementById('field-music-file').value = '';
+  setMusicPreview('');
+  postPreviewUpdate();
+});
+
 function renderCollagePreviews() {
   const wrap = document.getElementById('collagePhotos-preview-wrap');
   wrap.innerHTML = '';
@@ -285,15 +354,26 @@ function renderCollagePreviews() {
 }
 
 document.getElementById('field-collagePhotos-file').addEventListener('change', async (event) => {
-  const files = Array.from(event.target.files || []);
+  let files = Array.from(event.target.files || []);
   if (!files.length) return;
   const status = document.getElementById('collagePhotos-status');
+  const roomLeft = MAX_COLLAGE_PHOTOS - state.collagePhotos.length;
+  let truncated = false;
+  if (files.length > roomLeft) {
+    files = files.slice(0, Math.max(roomLeft, 0));
+    truncated = true;
+  }
+  if (!files.length) {
+    status.textContent = `Көбүрөөк сүрөт кошууга болбойт (максимум ${MAX_COLLAGE_PHOTOS}).`;
+    event.target.value = '';
+    return;
+  }
   status.textContent = 'Иштелүүдө...';
   try {
     const compressed = await Promise.all(files.map((f) => compressImageFile(f, 1200, 0.78)));
     state.collagePhotos.push(...compressed);
     renderCollagePreviews();
-    status.textContent = '';
+    status.textContent = truncated ? `Максимум ${MAX_COLLAGE_PHOTOS} сүрөт гана кошулду.` : '';
     event.target.value = '';
     postPreviewUpdate();
   } catch (err) {
@@ -333,9 +413,44 @@ function currentConfig() {
 }
 
 function postPreviewUpdate() {
+  scheduleDraftSave();
   if (!state.previewReady) return;
   const frame = document.getElementById('preview-frame');
   frame.contentWindow.postMessage({ type: 'PREVIEW_CONFIG', config: currentConfig() }, '*');
+}
+
+// --- Draft persistence: resume after closing the tab (see persist.js) ---
+
+const DRAFT_FIELD_IDS = [
+  'coupleNames', 'heroPhotoUrl', 'date', 'time', 'venueName', 'venueAddress',
+  'mapUrl', 'dressCode', 'hostsNames', 'musicUrl', 'customerName', 'customerContact',
+];
+
+function buildDraftSnapshot() {
+  const fields = {};
+  DRAFT_FIELD_IDS.forEach((id) => {
+    const el = document.getElementById(`field-${id}`);
+    if (el) fields[id] = el.value;
+  });
+  return {
+    category: state.category,
+    selectedType: state.selectedType,
+    selectedTemplateId: state.selectedTemplateId,
+    currentStep: state.currentStep,
+    schedule: state.schedule,
+    collagePhotos: state.collagePhotos,
+    fields,
+  };
+}
+
+let draftSaveTimer = null;
+function scheduleDraftSave() {
+  // Nothing worth resuming before a template is actually picked.
+  if (!state.selectedTemplateId) return;
+  clearTimeout(draftSaveTimer);
+  draftSaveTimer = setTimeout(() => {
+    window.WizardPersist.saveDraft(buildDraftSnapshot());
+  }, 600);
 }
 
 document.querySelectorAll('.wizard-step input').forEach((input) => {
@@ -349,8 +464,8 @@ function renderScheduleRows() {
     const rowEl = document.createElement('div');
     rowEl.className = 'schedule-row';
     rowEl.innerHTML = `
-      <input type="time" value="${row.time}" data-index="${index}" data-field="time" />
-      <input type="text" placeholder="Мис. Дасторкон" value="${row.label}" data-index="${index}" data-field="label" />
+      <input type="time" value="${row.time}" data-index="${index}" data-field="time" aria-label="Программанын убактысы" />
+      <input type="text" placeholder="Мис. Дасторкон" value="${row.label}" data-index="${index}" data-field="label" aria-label="Программанын аталышы" />
       <button type="button" data-remove="${index}" aria-label="Өчүрүү">×</button>
     `;
     container.appendChild(rowEl);
@@ -379,20 +494,40 @@ document.getElementById('add-schedule-row').addEventListener('click', () => {
 });
 
 function updateWizardStep() {
+  let activeStepEl = null;
   document.querySelectorAll('.wizard-step').forEach((el) => {
-    el.classList.toggle('active', Number(el.dataset.step) === state.currentStep);
+    const isActive = Number(el.dataset.step) === state.currentStep;
+    el.classList.toggle('active', isActive);
+    if (isActive) activeStepEl = el;
   });
   document.getElementById('wizard-prev').disabled = state.currentStep === 0;
 
   const isLastStep = state.currentStep === STEP_COUNT - 1;
   document.getElementById('wizard-next').classList.toggle('hidden', isLastStep);
   document.getElementById('wizard-submit').classList.toggle('hidden', !isLastStep);
+
+  // The full-screen preview sits behind a floating panel, and .wizard-steps
+  // (not the page) is what scrolls internally - for a long step (e.g. a
+  // schedule with many rows), always bring the new step's own heading back
+  // to the top of that panel instead of leaving it wherever the previous
+  // step happened to be scrolled to.
+  if (activeStepEl) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scrollContainer = document.querySelector('.wizard-steps');
+    if (scrollContainer) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const rect = activeStepEl.getBoundingClientRect();
+      const targetScroll = Math.max(0, scrollContainer.scrollTop + (rect.top - containerRect.top));
+      scrollContainer.scrollTo({ top: targetScroll, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  }
 }
 
 document.getElementById('wizard-prev').addEventListener('click', () => {
   if (state.currentStep > 0) {
     state.currentStep -= 1;
     updateWizardStep();
+    scheduleDraftSave();
   }
 });
 
@@ -400,6 +535,7 @@ document.getElementById('wizard-next').addEventListener('click', () => {
   if (state.currentStep < STEP_COUNT - 1) {
     state.currentStep += 1;
     updateWizardStep();
+    scheduleDraftSave();
   }
 });
 
@@ -430,14 +566,23 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
     },
   };
 
+  const body = JSON.stringify(payload);
+  if (new Blob([body]).size > MAX_PAYLOAD_BYTES) {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Telegram аркылуу жөнөтүү';
+    alert('Файлдардын жалпы көлөмү өтө чоң. Ырды же бир нече сүрөттү өчүрүп, кайра аракет кылыңыз.');
+    return;
+  }
+
   try {
     const res = await fetch('/.netlify/functions/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body,
     });
     if (!res.ok) throw new Error(`Request failed: ${res.status}`);
     document.getElementById('confirmation-order-id').textContent = orderId;
+    window.WizardPersist.clearDraft();
     showScreen('confirmation');
   } catch (err) {
     console.error(err);
@@ -446,3 +591,88 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
     alert('Ката кетти, кайра аракет кылыңыз.');
   }
 });
+
+// --- Draft restore, offered on first load only (see persist.js) ---
+
+function hideDraftBanner() {
+  document.getElementById('draft-banner').classList.add('hidden');
+}
+
+async function restoreDraft(draft) {
+  hideDraftBanner();
+  state.category = draft.category;
+  try {
+    await loadCarousel();
+  } catch (err) {
+    console.error(err);
+    await window.WizardPersist.clearDraft();
+    return;
+  }
+
+  if (draft.selectedType) {
+    const tabBtn = typeTabsContainer.querySelector(`[data-type-id="${draft.selectedType}"]`);
+    if (tabBtn) tabBtn.click();
+  }
+  if (!state.templates.some((t) => t.id === draft.selectedTemplateId)) {
+    // The template this draft was for no longer exists in the catalog.
+    await window.WizardPersist.clearDraft();
+    return;
+  }
+  selectCarouselCard(draft.selectedTemplateId);
+  state.selectedTemplateId = draft.selectedTemplateId;
+
+  try {
+    const res = await fetch(`../templates/${draft.selectedTemplateId}/config.example.json`);
+    if (!res.ok) throw new Error('Template config missing');
+    state.selectedTemplateDefaults = await res.json();
+  } catch (err) {
+    console.error(err);
+    await window.WizardPersist.clearDraft();
+    return;
+  }
+
+  state.schedule = draft.schedule && draft.schedule.length ? draft.schedule : [{ time: '', label: '' }];
+  state.collagePhotos = draft.collagePhotos || [];
+  renderScheduleRows();
+  renderCollagePreviews();
+
+  const fields = draft.fields || {};
+  DRAFT_FIELD_IDS.forEach((id) => {
+    const el = document.getElementById(`field-${id}`);
+    if (el) el.value = fields[id] || '';
+  });
+  setHeroPhotoPreview(fields.heroPhotoUrl || '');
+  setMusicPreview(fields.musicUrl || '');
+
+  state.currentStep = draft.currentStep || 0;
+  updateWizardStep();
+
+  state.previewReady = false;
+  const frame = document.getElementById('preview-frame');
+  frame.onload = () => {
+    state.previewReady = true;
+    postPreviewUpdate();
+  };
+  frame.src = `../templates/${draft.selectedTemplateId}/index.html`;
+
+  showScreen('wizard');
+}
+
+async function tryRestoreDraft() {
+  const draft = await window.WizardPersist.loadDraft();
+  if (!draft || !draft.selectedTemplateId) return;
+
+  const banner = document.getElementById('draft-banner');
+  banner.classList.remove('hidden');
+  document.getElementById('draft-continue').addEventListener('click', () => restoreDraft(draft), { once: true });
+  document.getElementById('draft-discard').addEventListener(
+    'click',
+    async () => {
+      hideDraftBanner();
+      await window.WizardPersist.clearDraft();
+    },
+    { once: true }
+  );
+}
+
+tryRestoreDraft();

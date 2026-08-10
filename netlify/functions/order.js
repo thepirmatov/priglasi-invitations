@@ -1,4 +1,5 @@
 const { getStore } = require('@netlify/blobs');
+const { getClientIp, checkRateLimit, isAllowedOrigin } = require('./lib/security');
 
 function validate(payload) {
   const required = [
@@ -32,6 +33,16 @@ function formatOrderMessage(payload) {
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  // Orders only ever come from this storefront itself, so cross-site Origins are rejected outright.
+  if (!isAllowedOrigin(event)) {
+    return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+  }
+
+  const withinLimit = await checkRateLimit(`order:${getClientIp(event)}`, { limit: 5, windowMs: 15 * 60 * 1000 });
+  if (!withinLimit) {
+    return { statusCode: 429, body: JSON.stringify({ error: 'Too many requests, try again later' }) };
   }
 
   let payload;
