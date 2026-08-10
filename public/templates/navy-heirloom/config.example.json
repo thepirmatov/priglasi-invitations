@@ -1,0 +1,24 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Бекзат & Жамиля",
+  "date": "2026-11-14",
+  "time": "17:00",
+  "venueName": "«Ак Мөңгү» Той Толкому",
+  "venueAddress": "Ахунбаев көчөсү, 95, Бишкек ш.",
+  "mapUrl": "https://maps.google.com/?q=Ак+Мөңгү+Той+Толкому+Бишкек",
+  "schedule": [
+    { "time": "17:00", "label": "Коноктарды тосуу" },
+    { "time": "17:30", "label": "Салтанаттуу аземи" },
+    { "time": "18:00", "label": "Той дасторкону" },
+    { "time": "22:00", "label": "Кечки бөлүм" }
+  ],
+  "dressCode": "Кечки стиль, көк жана алтын түстөр сунушталат",
+  "hostsNames": "Асан & Күлайым Мамытовдор",
+  "musicUrl": "../../shared/sample-music/track-1.mp3",
+  "colorTheme": {
+    "primary": "#2c3a5c",
+    "accent": "#3d4f7d",
+    "background": "#fffef9"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

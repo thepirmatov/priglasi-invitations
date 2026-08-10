@@ -1,0 +1,441 @@
+:root {
+  --color-primary: #3f4a51;
+  --color-accent: #a9c2dc;
+  --color-background: #faf8f5;
+  --ink-soft: #5c6469;
+  --slate-deep: color-mix(in srgb, var(--color-primary) 82%, black);
+  --max: 480px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-background);
+}
+
+body {
+  font-family: 'PT Serif', Georgia, serif;
+  color: var(--color-primary);
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  position: relative;
+  background: var(--color-background);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
+  padding-bottom: 8px;
+}
+
+main {
+  display: block;
+}
+
+section {
+  padding: 2.5rem 1.75rem;
+  text-align: center;
+}
+
+/* ---- flourish divider (original artwork) ---- */
+
+.flourish {
+  color: var(--color-primary);
+  opacity: 0.7;
+  width: 200px;
+  margin: 32px auto 22px;
+}
+
+.flourish svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ---- hero: photo frame with on-photo music toggle ---- */
+
+.hero {
+  margin: 26px 20px 0;
+  padding: 0;
+  aspect-ratio: 4 / 5;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-color: var(--slate-deep);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero.has-photo {
+  background-image: linear-gradient(to top, rgba(20, 22, 24, 0.6), rgba(20, 22, 24, 0.05) 45%), var(--hero-photo-url);
+}
+
+.hero:not(.has-photo) {
+  background-image: linear-gradient(160deg, var(--color-primary), var(--slate-deep));
+}
+
+.hero .music-toggle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1.5px solid rgba(255, 255, 255, 0.75) !important;
+  background: rgba(43, 46, 49, 0.35) !important;
+  backdrop-filter: blur(3px);
+  color: #fff !important;
+}
+
+.hero .music-toggle.playing {
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.25); }
+  50% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+}
+
+.hero__names {
+  padding: 34px 16px 22px;
+  background: linear-gradient(to top, rgba(30, 34, 37, 0.55), transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+}
+
+.event-type {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.couple-names {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 2.1rem;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- welcome arch ---- */
+
+.arch {
+  background: var(--color-primary);
+  border-radius: 50% 50% 0 0 / 46px 46px 0 0;
+  margin-top: 6px;
+  padding: 62px 32px 54px;
+  color: #fff;
+}
+
+.arch__greeting {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.7rem;
+  line-height: 1.35;
+  margin: 0 0 22px;
+}
+
+.arch__lead {
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin: 0 0 18px;
+}
+
+.arch__text {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #e7eaec;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+/* ---- photo collage ---- */
+
+.collage-section {
+  padding: 30px 20px 8px;
+}
+
+.collage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.collage-grid a {
+  display: block;
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #eef2f5;
+}
+
+.collage-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- blessing poem ---- */
+
+.blessing {
+  padding: 34px 28px 8px;
+}
+
+.poem {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.32rem;
+  line-height: 1.9;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+/* ---- location ---- */
+
+.location {
+  padding: 40px 28px 8px;
+}
+
+.location h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--ink-soft);
+  margin: 0 0 18px;
+}
+
+.venue-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.6rem;
+  margin: 0 0 4px;
+  color: var(--color-primary);
+}
+
+.venue-address {
+  margin: 0 0 22px;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+}
+
+.map-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  text-decoration: none;
+  border-radius: 999px;
+  font-size: 0.92rem;
+}
+
+.map-link:active {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+/* ---- countdown ---- */
+
+.countdown-section {
+  padding: 46px 24px 54px;
+}
+
+.countdown-date {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 2.2rem;
+  color: var(--color-primary);
+  margin: 0 0 4px;
+}
+
+.countdown-section h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.4rem;
+  margin: 0 0 22px;
+  color: var(--ink-soft);
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+}
+
+.countdown > div {
+  background: var(--slate-deep);
+  border-radius: 12px;
+  padding: 14px 5px;
+  width: 74px;
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.countdown span {
+  display: block;
+  margin-top: 7px;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #aab2b7;
+  font-weight: 400;
+}
+
+/* ---- RSVP ---- */
+
+.rsvp {
+  padding: 12px 20px 40px;
+}
+
+.rsvp-card {
+  background: var(--color-primary);
+  border-radius: 20px;
+  padding: 40px 26px;
+  color: #fff;
+}
+
+.rsvp-card h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin: 0 0 20px;
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 300px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.rsvp-form label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.rsvp-form input[type='text']::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.attendance-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.attendance-options legend {
+  display: none;
+}
+
+.rsvp-form button[type='submit'] {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-background);
+  color: var(--color-primary);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  text-align: center;
+  min-height: 1.2em;
+}
+
+/* ---- closing / hosts signature ---- */
+
+.closing {
+  padding-bottom: 20px;
+}
+
+.closing__lead {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  margin: 0 0 24px;
+}
+
+.signature-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+
+.signature {
+  margin: 0 24px;
+  padding: 20px;
+  background: var(--color-primary);
+  border-radius: 14px;
+  color: #fff;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+
+/* ---- footer ---- */
+
+.footer {
+  text-align: center;
+  padding: 1.5rem 1.75rem 3rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 481px) {
+  body { background: #eef1f2; }
+}

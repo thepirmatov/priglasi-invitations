@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ky">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Чакыруу</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bad+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../../shared/decor.css" />
+</head>
+<body>
+  <button id="music-toggle" class="music-toggle" aria-label="Музыканы күйгүзүү/өчүрүү">♪</button>
+  <audio id="bg-music" loop preload="none"></audio>
+
+  <main>
+    <section class="hero">
+      <p id="event-type" class="eyebrow"></p>
+      <h1 id="couple-names" class="couple-names"></h1>
+      <img src="images/flower-1.png" alt="" class="hero-flower" />
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <section class="greeting">
+      <p class="script-lead">Урматтуу коноктор!</p>
+      <img src="images/heart-icon.png" alt="" class="icon-deco" />
+      <p class="invite-text">Жашообуздагы эң бактылуу күндөрдүн бирин силер менен бөлүшүүгө чакырабыз.</p>
+      <p class="countdown-title">Той салтанатына чейин</p>
+      <div id="countdown" class="countdown" aria-live="polite"></div>
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <section class="calendar-section">
+      <div id="calendar-widget" class="calendar-widget"></div>
+      <p id="event-date" class="event-date"></p>
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <section class="details">
+      <p class="script-lead">Дареги жана</p>
+      <img src="images/rings-icon.png" alt="" class="icon-deco" />
+      <p id="venue-name" class="venue-name"></p>
+      <p id="venue-address" class="venue-address"></p>
+      <a id="map-link" class="map-link" href="#" target="_blank" rel="noopener">Картаны ачуу</a>
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <section class="hosts-section">
+      <h2 class="script-lead">Тойдун ээлери</h2>
+      <p id="hosts-names" class="hosts-names"></p>
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <section class="schedule">
+      <h2 class="script-lead">Программа</h2>
+      <ul id="schedule-list" class="schedule-list"></ul>
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <section class="dress-code">
+      <h2 class="script-lead">Дресс-код</h2>
+      <p id="dress-code-text"></p>
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <section class="rsvp">
+      <img src="images/chandelier.png" alt="" class="icon-deco chandelier" />
+      <p class="rsvp-lead">Сизден жооп күтөбүз. Бул күндү дагы да бакытка жана кубанычка толтуруу үчүн биз менен бирге болуңуз.</p>
+
+      <div class="decor decor-md" data-decor="rings"></div>
+      <h2 class="rsvp-title">Катышууңузду ырастап коюңуз</h2>
+
+      <form id="rsvp-form" class="rsvp-form">
+        <label for="guest-name" class="form-label">Аты-жөнүңүз</label>
+        <input type="text" id="guest-name" name="guestName" class="form-input" placeholder="Мисалы: Асан Үсөнов" required />
+
+        <fieldset class="radio-fieldset">
+          <legend class="form-label">Тойго келе аласызбы?</legend>
+          <div class="radio-container">
+            <label class="radio-option"><input type="radio" name="attendance" value="yes" required /> <span class="radio-text">Ооба, сөзсүз барам!</span></label>
+            <label class="radio-option"><input type="radio" name="attendance" value="no" /> <span class="radio-text">Тилекке каршы, бара албайм</span></label>
+          </div>
+        </fieldset>
+
+        <div id="guest-count-block" class="guest-count-block hidden">
+          <label class="form-label">Канча адам болосуздар?</label>
+          <div class="stepper">
+            <button type="button" id="guest-count-decrease" class="stepper-btn" aria-label="Азайтуу">&minus;</button>
+            <span id="guest-count" class="stepper-value">1</span>
+            <button type="button" id="guest-count-increase" class="stepper-btn" aria-label="Көбөйтүү">+</button>
+          </div>
+        </div>
+
+        <fieldset class="radio-fieldset">
+          <legend class="form-label">Кимдин коногусуз?</legend>
+          <div class="radio-container">
+            <label class="radio-option"><input type="radio" name="side" /> <span id="side-label-a" class="radio-text"></span></label>
+            <label class="radio-option"><input type="radio" name="side" /> <span id="side-label-b" class="radio-text"></span></label>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="btn-submit">Жоопту жөнөтүү</button>
+        <p id="rsvp-status" class="rsvp-status" role="status"></p>
+      </form>
+    </section>
+
+    <img src="images/fabric-swirl.png" alt="" class="fabric-divider" />
+
+    <footer class="footer">
+      <img src="images/flower-2.png" alt="" class="footer-flower" />
+      <p class="script-lead footer-lead">Урматтоо менен,</p>
+    </footer>
+  </main>
+
+  <script src="../../shared/decor.js"></script>
+  <script src="../../shared/template-core.js"></script>
+</body>
+</html>

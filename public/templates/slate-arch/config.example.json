@@ -1,0 +1,24 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Эрлан & Динара",
+  "date": "2026-08-16",
+  "time": "10:00",
+  "venueName": "«Ак-Сарай» той айылы",
+  "venueAddress": "Ала-Тоо көчөсү, 24, Токмок ш.",
+  "mapUrl": "https://maps.google.com/?q=Ак-Сарай+той+айылы+Токмок",
+  "hostsNames": "Санжар & Гулмира",
+  "musicUrl": "../../shared/sample-music/track-3.m4a",
+  "heroPhotoUrl": "../../shared/sample-photos/1.jpeg",
+  "collagePhotos": [
+    "../../shared/sample-photos/2.jpeg",
+    "../../shared/sample-photos/3.jpeg",
+    "../../shared/sample-photos/4.jpeg",
+    "../../shared/sample-photos/1.jpeg"
+  ],
+  "colorTheme": {
+    "primary": "#3f4a51",
+    "accent": "#a9c2dc",
+    "background": "#faf8f5"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

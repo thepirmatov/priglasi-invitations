@@ -1,0 +1,523 @@
+:root {
+  --color-primary: #4a4238;
+  --color-accent: #b89c7c;
+  --color-background: #f4efe8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--color-primary);
+  background: var(--color-background);
+  line-height: 1.6;
+}
+
+/* --- Framed card, matching the source design's white-border + inset gold outline --- */
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  min-height: 100vh;
+  padding-bottom: 20px;
+  position: relative;
+  border: 15px solid #fff;
+  border-radius: 5px;
+}
+
+.container::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 2px solid var(--color-accent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .container {
+    margin: 0 auto;
+    border-width: 5px;
+  }
+  .container::after {
+    inset: 5px;
+  }
+}
+
+main {
+  position: relative;
+}
+
+section {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+h2 {
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  color: var(--color-accent);
+  font-weight: 700;
+  margin: 0 0 1.25rem;
+}
+
+/* --- Hero: photo fading into the cream card below --- */
+
+.hero {
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  text-align: center;
+  padding: 0 1.5rem 3rem;
+  background-color: var(--color-background);
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero.has-photo {
+  background-image: linear-gradient(
+      to bottom,
+      rgba(244, 239, 232, 0) 0%,
+      rgba(244, 239, 232, 0.55) 35%,
+      rgba(244, 239, 232, 0.94) 70%,
+      var(--color-background) 100%
+    ),
+    var(--hero-photo-url);
+}
+
+.top-date {
+  position: absolute;
+  top: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 92%;
+  font-weight: 700;
+  font-size: clamp(0.9rem, 4.5vw, 1.2rem);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #2a2a2a;
+}
+
+.couple-names {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: clamp(3rem, 15vw, 4.2rem);
+  line-height: 1.05;
+  color: #1a1a1a;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.scroll-hint {
+  margin-top: 1.5rem;
+  color: var(--color-primary);
+  opacity: 0.75;
+  font-size: 1.2rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+/* --- Calendar --- */
+
+.calendar-widget {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: inline-block;
+  border: 1px solid #f0f0f0;
+}
+
+.month-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 2.4rem;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.calendar-table th {
+  color: var(--color-accent);
+  font-weight: 600;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.calendar-table td {
+  padding: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.calendar-table td.muted {
+  color: #ccc;
+}
+
+.wedding-day {
+  background-color: var(--color-accent);
+  color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  box-shadow: 0 3px 8px rgba(184, 156, 124, 0.4);
+}
+
+.calendar-note {
+  margin-top: 1.25rem;
+  font-style: italic;
+}
+
+/* --- Countdown --- */
+
+.event-type {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.countdown > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  padding: 0.9rem 0.75rem;
+  border-radius: 8px;
+  min-width: 72px;
+  border: 1px solid var(--color-accent);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.countdown span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 0.05em;
+  margin-top: 0.35rem;
+  font-weight: 600;
+}
+
+/* --- Welcome / hosts / program text blocks --- */
+
+.welcome-text {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.hosts-names {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(1.7rem, 8vw, 2.2rem);
+  color: var(--color-accent);
+  margin: 0;
+}
+
+.schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+.schedule-list .time {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+/* --- Venue / details --- */
+
+.venue-name {
+  font-size: 1.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.4rem;
+}
+
+.venue-address {
+  color: #777;
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+}
+
+.map-link {
+  display: inline-block;
+  width: 100%;
+  max-width: 260px;
+  padding: 0.95rem;
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #fff;
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.map-link:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* --- Collage --- */
+
+.collage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.collage-grid a {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.collage-grid img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- RSVP --- */
+
+.rsvp {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin: 1.25rem;
+  border: 1px solid rgba(184, 156, 124, 0.2);
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
+.rsvp-form label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.rsvp-form input[type='text'] {
+  padding: 0.85rem;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-family: inherit;
+  background: #fdfdfd;
+  color: var(--color-primary);
+}
+
+.attendance-options,
+.side-options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.attendance-options legend,
+.side-options legend {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #888;
+  padding: 0;
+  margin-bottom: 0.3rem;
+}
+
+.attendance-options label,
+.side-options label {
+  display: flex;
+  align-items: center;
+  padding: 0.9rem;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fdfdfd;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.attendance-options input,
+.side-options input {
+  margin-right: 0.75rem;
+  transform: scale(1.35);
+  accent-color: var(--color-accent);
+}
+
+.guest-count-block.hidden {
+  display: none;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: #fdfdfd;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+
+.stepper button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent);
+  background: #fff;
+  color: var(--color-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.stepper button:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.stepper button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+#guest-count {
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-width: 30px;
+  text-align: center;
+}
+
+.rsvp-form button[type='submit'] {
+  padding: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  background: #6d7561;
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(109, 117, 97, 0.3);
+}
+
+.rsvp-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  min-height: 1.2em;
+  text-align: center;
+}
+
+/* --- Dress code / footer --- */
+
+.dress-code {
+  border-top: 1px solid rgba(184, 156, 124, 0.2);
+}
+
+.footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--color-accent);
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/* --- Music toggle: plain fixed pill --- */
+
+.music-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-accent);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-primary);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.music-toggle.playing {
+  background: var(--color-accent);
+  color: #fff;
+}

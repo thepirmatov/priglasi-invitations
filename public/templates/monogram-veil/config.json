@@ -1,0 +1,24 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Нурлан & Бегимай",
+  "date": "2026-11-14",
+  "time": "17:00",
+  "venueName": "«Асыл-Мурас» той залы",
+  "venueAddress": "Чүй проспекти 155, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Асыл-Мурас+той+залы+Бишкек",
+  "schedule": [
+    { "time": "17:00", "label": "Коноктарды тосуу" },
+    { "time": "17:30", "label": "Салтанаттуу аземи" },
+    { "time": "18:00", "label": "Той дасторкону" },
+    { "time": "22:00", "label": "Кечки бөлүм" }
+  ],
+  "dressCode": "Кечки стиль, алтын жана коричневый тондор кабыл алынат",
+  "musicUrl": "../../shared/sample-music/track-2.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/2.jpeg",
+  "colorTheme": {
+    "primary": "#4a4238",
+    "accent": "#b89c7c",
+    "background": "#f4ede0"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

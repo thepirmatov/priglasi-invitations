@@ -1,0 +1,30 @@
+{
+  "eventType": "wedding",
+  "coupleNames": "Данияр & Айгерим",
+  "date": "2026-10-17",
+  "time": "17:00",
+  "venueName": "Ак Кеме Restaurant",
+  "venueAddress": "Тоголок Молдо 41, Бишкек",
+  "mapUrl": "https://maps.google.com/?q=Ак+Кеме+Бишкек",
+  "schedule": [
+    { "time": "16:00", "label": "Коноктордун келиши" },
+    { "time": "17:00", "label": "Тойдун башталышы" },
+    { "time": "22:00", "label": "Тойдун бүтүшү" }
+  ],
+  "dressCode": "Кечки стиль сунушталат",
+  "hostsNames": "Өмүрбек & Роза",
+  "musicUrl": "../../shared/sample-music/track-1.mp3",
+  "heroPhotoUrl": "../../shared/sample-photos/2.jpeg",
+  "collagePhotos": [
+    "../../shared/sample-photos/1.jpeg",
+    "../../shared/sample-photos/2.jpeg",
+    "../../shared/sample-photos/3.jpeg",
+    "../../shared/sample-photos/4.jpeg"
+  ],
+  "colorTheme": {
+    "primary": "#4a4238",
+    "accent": "#b89c7c",
+    "background": "#f4efe8"
+  },
+  "telegramChatId": "REPLACE_WITH_COUPLE_CHAT_ID"
+}

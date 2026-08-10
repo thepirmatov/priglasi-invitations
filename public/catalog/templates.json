@@ -90,6 +90,34 @@
       "categories": ["wedding"],
       "type": "initials",
       "screenshot": "screenshots/framed-monogram.png"
+    },
+    {
+      "id": "photo-fade",
+      "name": "Photo Fade",
+      "categories": ["wedding"],
+      "type": "photo",
+      "screenshot": "screenshots/photo-fade.png"
+    },
+    {
+      "id": "navy-heirloom",
+      "name": "Navy Heirloom",
+      "categories": ["wedding"],
+      "type": "illustrated",
+      "screenshot": "screenshots/navy-heirloom.png"
+    },
+    {
+      "id": "slate-arch",
+      "name": "Slate Arch",
+      "categories": ["wedding"],
+      "type": "photo",
+      "screenshot": "screenshots/slate-arch.png"
+    },
+    {
+      "id": "monogram-veil",
+      "name": "Monogram Veil",
+      "categories": ["wedding"],
+      "type": "initials",
+      "screenshot": "screenshots/monogram-veil.png"
     }
   ]
 }
