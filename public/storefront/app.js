@@ -18,8 +18,6 @@ const state = {
   category: null,
   types: [],
   templatesInCategory: [],
-  selectedType: null,
-  templates: [],
   selectedTemplateId: null,
   selectedTemplateDefaults: null,
   currentStep: 0,
@@ -109,11 +107,17 @@ document.querySelectorAll('.category-card').forEach((card) => {
 });
 
 // --- Screen 2: carousel ---
+//
+// One long scrolling page: a sticky nav of type tabs (Classic, Envelope, ...)
+// that jump to an in-page section, each section holding its own mini carousel
+// that auto-rotates through that type's templates 3-at-a-time. Tapping a card
+// reveals a "Select" (-> wizard) / "View" (-> template in a new tab) overlay.
 
-const carouselTrack = document.getElementById('carousel-track');
-const typeTabsContainer = document.getElementById('type-tabs');
-const useTemplateButton = document.getElementById('use-template-button');
-let carouselObserver = null;
+const typeNav = document.getElementById('type-nav');
+const typeSectionsContainer = document.getElementById('type-sections');
+const ROTATE_INTERVAL_MS = 2000;
+const ROTATE_RESUME_DELAY_MS = 4000;
+let rotators = [];
 
 async function loadCarousel() {
   const res = await fetch('../catalog/templates.json');
@@ -121,95 +125,172 @@ async function loadCarousel() {
   state.types = catalog.types;
   state.templatesInCategory = catalog.templates.filter((t) => t.categories.includes(state.category));
 
-  // Only show type tabs when this category actually spans more than one type -
-  // kyz uzatuu today is all "classic", so it stays a plain carousel with no tabs.
   const availableTypeIds = [...new Set(state.templatesInCategory.map((t) => t.type))];
   const availableTypes = state.types.filter((t) => availableTypeIds.includes(t.id));
-  state.selectedType = availableTypes[0] ? availableTypes[0].id : null;
 
-  renderTypeTabs(availableTypes);
-  renderCarouselCards();
+  renderTypeSections(availableTypes);
 }
 
-function renderTypeTabs(availableTypes) {
-  typeTabsContainer.innerHTML = '';
-  if (availableTypes.length <= 1) {
-    typeTabsContainer.classList.add('hidden');
-    return;
-  }
-  typeTabsContainer.classList.remove('hidden');
+function stopAllRotators() {
+  rotators.forEach((r) => {
+    clearInterval(r.timerId);
+    clearTimeout(r.resumeTimeoutId);
+  });
+  rotators = [];
+}
+
+function renderTypeSections(availableTypes) {
+  stopAllRotators();
+  typeNav.innerHTML = '';
+  typeSectionsContainer.innerHTML = '';
+
+  // Only show the sticky type nav when this category actually spans more than
+  // one type - kyz uzatuu today is all "classic", so it's just one section.
+  typeNav.classList.toggle('hidden', availableTypes.length <= 1);
 
   availableTypes.forEach((type) => {
     const tab = document.createElement('button');
     tab.type = 'button';
     tab.className = 'type-tab';
-    tab.dataset.typeId = type.id;
     tab.textContent = type.label;
-    tab.classList.toggle('active', type.id === state.selectedType);
     tab.addEventListener('click', () => {
-      state.selectedType = type.id;
-      typeTabsContainer.querySelectorAll('.type-tab').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      renderCarouselCards();
+      const section = document.getElementById(`type-${type.id}`);
+      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    typeTabsContainer.appendChild(tab);
+    typeNav.appendChild(tab);
+
+    const templates = state.templatesInCategory.filter((t) => t.type === type.id);
+    if (!templates.length) return;
+
+    const section = document.createElement('section');
+    section.className = 'type-section';
+    section.id = `type-${type.id}`;
+
+    const heading = document.createElement('h2');
+    heading.textContent = type.label;
+    section.appendChild(heading);
+
+    const track = document.createElement('div');
+    track.className = 'mini-carousel-track';
+    templates.forEach((tpl) => track.appendChild(buildMiniCarouselCard(tpl)));
+    section.appendChild(track);
+
+    typeSectionsContainer.appendChild(section);
+
+    if (templates.length > 3) rotators.push(createRotator(track, templates.length));
   });
 }
 
-function renderCarouselCards() {
-  state.templates = state.templatesInCategory.filter((t) => t.type === state.selectedType);
+function buildMiniCarouselCard(tpl) {
+  const card = document.createElement('div');
+  card.className = 'mini-carousel-card';
+  card.dataset.templateId = tpl.id;
+  card.innerHTML = `
+    <img src="../catalog/${tpl.screenshot}?v=${CACHE_BUST}" alt="${tpl.name}" />
+    <span class="mini-carousel-card-name">${tpl.name}</span>
+  `;
 
-  carouselTrack.innerHTML = '';
-  state.selectedTemplateId = null;
-  useTemplateButton.disabled = true;
+  const overlay = document.createElement('div');
+  overlay.className = 'card-overlay';
 
-  state.templates.forEach((tpl) => {
-    const card = document.createElement('div');
-    card.className = 'carousel-card';
-    card.dataset.templateId = tpl.id;
-    card.innerHTML = `
-      <img src="../catalog/${tpl.screenshot}?v=${CACHE_BUST}" alt="${tpl.name}" />
-      <span class="carousel-card-name">${tpl.name}</span>
-    `;
-    card.addEventListener('click', () => {
-      card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      selectCarouselCard(tpl.id);
-    });
-    carouselTrack.appendChild(card);
+  const selectBtn = document.createElement('button');
+  selectBtn.type = 'button';
+  selectBtn.className = 'card-action card-action-select';
+  selectBtn.textContent = 'Тандоо';
+  selectBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    selectTemplateAndProceed(tpl.id);
   });
 
-  if (carouselObserver) carouselObserver.disconnect();
-  carouselObserver = new IntersectionObserver(
-    (entries) => {
-      const mostVisible = entries.reduce((best, e) => (e.intersectionRatio > (best?.intersectionRatio || 0) ? e : best), null);
-      if (mostVisible && mostVisible.intersectionRatio > 0.6) {
-        selectCarouselCard(mostVisible.target.dataset.templateId);
-      }
-    },
-    { root: carouselTrack, threshold: [0.6, 0.9] }
-  );
-  carouselTrack.querySelectorAll('.carousel-card').forEach((card) => carouselObserver.observe(card));
+  const viewBtn = document.createElement('button');
+  viewBtn.type = 'button';
+  viewBtn.className = 'card-action card-action-view';
+  viewBtn.textContent = 'Көрүү';
+  viewBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    window.open(`../templates/${tpl.id}/index.html`, '_blank', 'noopener');
+  });
+
+  overlay.append(selectBtn, viewBtn);
+  card.appendChild(overlay);
+  card.addEventListener('click', () => toggleCardOverlay(card));
+
+  return card;
 }
 
-function selectCarouselCard(templateId) {
+function findRotatorForCard(card) {
+  return rotators.find((r) => r.track.contains(card));
+}
+
+function closeAllCardOverlays(exceptCard) {
+  document.querySelectorAll('.mini-carousel-card.revealed').forEach((card) => {
+    if (card === exceptCard) return;
+    card.classList.remove('revealed');
+    const rotator = findRotatorForCard(card);
+    if (rotator) scheduleResume(rotator);
+  });
+}
+
+function toggleCardOverlay(card) {
+  const willReveal = !card.classList.contains('revealed');
+  closeAllCardOverlays();
+  card.classList.toggle('revealed', willReveal);
+  const rotator = findRotatorForCard(card);
+  if (!rotator) return;
+  if (willReveal) pauseRotator(rotator);
+  else scheduleResume(rotator);
+}
+
+// Tapping anywhere outside a card (including scrolling the page) closes any
+// open overlay instead of leaving it stuck open over a card that's rotated away.
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.mini-carousel-card')) closeAllCardOverlays();
+});
+
+function createRotator(track, count) {
+  const rotator = { track, count, cursor: 0, timerId: null, resumeTimeoutId: null };
+
+  const tick = () => {
+    rotator.cursor = (rotator.cursor + 1) % count;
+    const firstCard = track.children[0];
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    const step = firstCard ? firstCard.getBoundingClientRect().width + gap : track.clientWidth / 3;
+    track.scrollTo({ left: rotator.cursor * step, behavior: 'smooth' });
+  };
+  rotator.start = () => {
+    if (rotator.timerId) return;
+    rotator.timerId = setInterval(tick, ROTATE_INTERVAL_MS);
+  };
+  rotator.start();
+
+  // Pause auto-rotation while the customer is actually touching/dragging the
+  // row, and resume a few seconds after they let go (unless a card's overlay
+  // is open, in which case toggleCardOverlay/closeAllCardOverlays own the resume).
+  track.addEventListener('pointerdown', () => pauseRotator(rotator));
+  track.addEventListener('pointerup', () => {
+    if (!track.querySelector('.mini-carousel-card.revealed')) scheduleResume(rotator);
+  });
+
+  return rotator;
+}
+
+function pauseRotator(rotator) {
+  clearInterval(rotator.timerId);
+  rotator.timerId = null;
+  clearTimeout(rotator.resumeTimeoutId);
+}
+
+function scheduleResume(rotator) {
+  clearTimeout(rotator.resumeTimeoutId);
+  rotator.resumeTimeoutId = setTimeout(() => {
+    if (!rotator.track.querySelector('.mini-carousel-card.revealed')) rotator.start();
+  }, ROTATE_RESUME_DELAY_MS);
+}
+
+async function selectTemplateAndProceed(templateId) {
   state.selectedTemplateId = templateId;
-  carouselTrack.querySelectorAll('.carousel-card').forEach((card) => {
-    card.classList.toggle('selected', card.dataset.templateId === templateId);
-  });
-  useTemplateButton.disabled = false;
-}
-
-document.querySelector('.carousel-arrow-left').addEventListener('click', () => {
-  carouselTrack.scrollBy({ left: -carouselTrack.clientWidth, behavior: 'smooth' });
-});
-document.querySelector('.carousel-arrow-right').addEventListener('click', () => {
-  carouselTrack.scrollBy({ left: carouselTrack.clientWidth, behavior: 'smooth' });
-});
-
-useTemplateButton.addEventListener('click', async () => {
-  if (!state.selectedTemplateId) return;
   try {
-    const res = await fetch(`../templates/${state.selectedTemplateId}/config.example.json`);
+    const res = await fetch(`../templates/${templateId}/config.example.json`);
     state.selectedTemplateDefaults = await res.json();
   } catch (err) {
     console.error(err);
@@ -243,11 +324,11 @@ useTemplateButton.addEventListener('click', async () => {
     state.previewReady = true;
     postPreviewUpdate();
   };
-  frame.src = `../templates/${state.selectedTemplateId}/index.html`;
+  frame.src = `../templates/${templateId}/index.html`;
 
   updateWizardStep();
   showScreen('wizard');
-});
+}
 
 // --- Screen 3: wizard ---
 
@@ -434,7 +515,6 @@ function buildDraftSnapshot() {
   });
   return {
     category: state.category,
-    selectedType: state.selectedType,
     selectedTemplateId: state.selectedTemplateId,
     currentStep: state.currentStep,
     schedule: state.schedule,
@@ -548,7 +628,7 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
   const submittedConfig = currentConfig();
   const defaults = state.selectedTemplateDefaults || {};
   // The field was pre-filled with the template's own demo photo so the
-  // preview wouldn't look broken (see useTemplateButton above). If the
+  // preview wouldn't look broken (see selectTemplateAndProceed above). If the
   // customer never replaced it, don't ship our stock/demo photo (or its
   // dev-only relative path) to their real site.
   if (submittedConfig.heroPhotoUrl === defaults.heroPhotoUrl) {
@@ -569,7 +649,7 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
   const body = JSON.stringify(payload);
   if (new Blob([body]).size > MAX_PAYLOAD_BYTES) {
     submitButton.disabled = false;
-    submitButton.textContent = 'Telegram аркылуу жөнөтүү';
+    submitButton.textContent = 'Жөнөтүү';
     alert('Файлдардын жалпы көлөмү өтө чоң. Ырды же бир нече сүрөттү өчүрүп, кайра аракет кылыңыз.');
     return;
   }
@@ -581,13 +661,27 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
       body,
     });
     if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+    // whatsappUrl is only present when MANAGER_WHATSAPP_NUMBER is configured
+    // server-side (see order.js) - the Telegram-only default omits it.
+    const { whatsappUrl } = await res.json();
     document.getElementById('confirmation-order-id').textContent = orderId;
+    const whatsappLink = document.getElementById('confirmation-whatsapp-link');
+    if (whatsappUrl) {
+      whatsappLink.href = whatsappUrl;
+      whatsappLink.classList.remove('hidden');
+      document.getElementById('confirmation-message').textContent =
+        'Буйрутмаңыз сакталды. Төлөмдү тактоо жана чакырууну даярдоо үчүн менеджер менен WhatsApp аркылуу байланышыңыз.';
+    } else {
+      whatsappLink.classList.add('hidden');
+      document.getElementById('confirmation-message').textContent =
+        'Сиздин буйрутмаңыз жөнөтүлдү. Төлөмдү тактоо үчүн жакында сиз менен байланышабыз.';
+    }
     window.WizardPersist.clearDraft();
     showScreen('confirmation');
   } catch (err) {
     console.error(err);
     submitButton.disabled = false;
-    submitButton.textContent = 'Telegram аркылуу жөнөтүү';
+    submitButton.textContent = 'Жөнөтүү';
     alert('Ката кетти, кайра аракет кылыңыз.');
   }
 });
@@ -609,16 +703,11 @@ async function restoreDraft(draft) {
     return;
   }
 
-  if (draft.selectedType) {
-    const tabBtn = typeTabsContainer.querySelector(`[data-type-id="${draft.selectedType}"]`);
-    if (tabBtn) tabBtn.click();
-  }
-  if (!state.templates.some((t) => t.id === draft.selectedTemplateId)) {
+  if (!state.templatesInCategory.some((t) => t.id === draft.selectedTemplateId)) {
     // The template this draft was for no longer exists in the catalog.
     await window.WizardPersist.clearDraft();
     return;
   }
-  selectCarouselCard(draft.selectedTemplateId);
   state.selectedTemplateId = draft.selectedTemplateId;
 
   try {

@@ -96,8 +96,10 @@ async function sendTelegramMessage(botToken, chatId, replyToMessageId, text) {
 exports.handler = async (event) => {
   // This endpoint is public (Netlify Functions have no built-in caller auth), and would
   // otherwise let anyone who sends a valid orderId trigger a live deploy + mark the order
-  // "completed" without a manager ever approving it via /bashta. telegram-webhook.js is the
-  // only legitimate caller, and proves that by echoing this shared secret.
+  // "completed" without a manager ever approving payment. telegram-webhook.js (a manager's
+  // /bashta reply) and scripts/deploy-order.js (you, after the manager confirms payment over
+  // WhatsApp - see README) are the only legitimate callers, and both prove that by echoing
+  // this shared secret.
   const expectedSecret = process.env.INTERNAL_FUNCTION_SECRET;
   const providedSecret = event.headers && (event.headers['x-internal-secret'] || event.headers['X-Internal-Secret']);
   if (!expectedSecret || providedSecret !== expectedSecret) {
@@ -109,10 +111,24 @@ exports.handler = async (event) => {
   const netlifyToken = process.env.NETLIFY_AUTH_TOKEN;
   const store = getStore('orders');
 
-  try {
-    const order = await store.get(orderId, { type: 'json' });
-    if (!order) throw new Error(`Order not found: ${orderId}`);
+  const order = await store.get(orderId, { type: 'json' });
+  if (!order) {
+    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Буйрутма табылган жок: ${orderId}`);
+    return { statusCode: 202, body: '' };
+  }
+  // Both the Telegram /bashta path and the manual deploy-order script can reach
+  // this same function now, so this check - not either caller's own - is what
+  // actually prevents a duplicate trigger from deploying (and billing) the same
+  // order twice. Best-effort, not a strict guarantee (see checkRateLimit's same
+  // caveat in lib/security.js): a get-then-set race is still possible if two
+  // triggers land within milliseconds of each other, just very unlikely here.
+  if (order.status !== 'pending') {
+    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Бул буйрутма мурда иштелген (status: ${order.status}).`);
+    return { statusCode: 202, body: '' };
+  }
+  await store.setJSON(orderId, { ...order, status: 'in_progress' });
 
+  try {
     const zipBuffer = await buildDeployZip(order.templateId, order.config);
     const slug = slugify(order.config.coupleNames, orderId);
     const site = await createNetlifySite(netlifyToken, slug);
@@ -123,9 +139,8 @@ exports.handler = async (event) => {
     await sendTelegramMessage(botToken, chatId, replyToMessageId, `Даяр! ${siteUrl}`);
   } catch (err) {
     console.error(err);
-    const order = await store.get(orderId, { type: 'json' });
-    if (order) await store.setJSON(orderId, { ...order, status: 'pending' });
-    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: ${err.message}\nКайра аракет кылуу үчүн /bashta жазыңыз.`);
+    await store.setJSON(orderId, { ...order, status: 'pending' });
+    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: ${err.message}\nКайра аракет кылуу үчүн /bashta жазыңыз же scripts/deploy-order.js.`);
   }
 
   return { statusCode: 202, body: '' };

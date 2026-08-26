@@ -1,18 +1,29 @@
 # PRIGLASI — invitation storefront + manager-gated deploy pipeline
 
 A customer picks a category and swipes through template screenshots, customizes one in a step-by-step
-wizard with a live preview, and submits the order via Telegram. A human collects payment out-of-band.
-Only then does an authorized manager reply `/bashta` (or `/create`) to the order notification in Telegram,
-which generates and deploys that couple's own Netlify site and replies with the live link.
+wizard with a live preview, and submits the order. A human collects payment out-of-band. Only then does an
+authorized manager reply `/bashta` (or `/create`) to the order notification in Telegram, which generates
+and deploys that couple's own Netlify site and replies with the live link.
+
+**This is a toggle, not two separate builds.** Telegram cannot be assumed reachable in Kyrgyzstan, so a
+WhatsApp-based alternative already exists and is fully wired up, ready to flip on with a single env var
+(`MANAGER_WHATSAPP_NUMBER`) if Telegram ever actually gets blocked — no code changes needed at that point.
+With it unset (today's default), `order.js` behaves exactly like the description above: Telegram is
+required, and an order fails loudly if it can't be sent. Set it, and the flow instead redirects the
+customer straight into WhatsApp with a pre-filled message to the manager (who then takes the conversation
+and payment from there entirely in WhatsApp), demotes Telegram to a best-effort backup notification, and
+`order.js` starts returning a WhatsApp link the confirmation screen shows a button for. Either way, once
+the manager confirms payment she tells you the order id; with WhatsApp active, reply-to-approve via
+Telegram isn't available to her (she isn't in that flow anymore), so you deploy it yourself with
+`npm run deploy-order -- <orderId>` (see below) instead of waiting on her `/bashta`.
 
 ## Previewing the storefront on GitHub Pages
 
 `.github/workflows/pages.yml` publishes `public/` (storefront + all templates + catalog) as the Pages
 site root on every push to `main` — enable it once via **Settings → Pages → Source: GitHub Actions**.
-This is front-end-only: `netlify/functions/*` don't run on Pages, so the wizard's final "Telegram аркылуу
-жөнөтүү" submission (and RSVP forms on individual templates) will fail there with a network error. Use
-this for reviewing template designs and the wizard flow; use `netlify dev` (below) to test the full
-order → Telegram → deploy pipeline.
+This is front-end-only: `netlify/functions/*` don't run on Pages, so the wizard's final submission (and
+RSVP forms on individual templates) will fail there with a network error. Use this for reviewing template
+designs and the wizard flow; use `netlify dev` (below) to test the full order → deploy pipeline.
 
 ## Structure
 
@@ -27,16 +38,41 @@ order → Telegram → deploy pipeline.
 
 /netlify/functions/
   rsvp.js                       <- forwards a guest RSVP to the couple's Telegram chat
-  order.js                      <- receives a wizard submission, stores it in Netlify Blobs, notifies managers
-  telegram-webhook.js           <- validates manager identity + order reply, triggers the deploy
-  deploy-site-background.js     <- builds the deploy zip, calls the Netlify API, replies with the live link
+  order.js                      <- receives a wizard submission, stores it in Netlify Blobs, notifies the
+                                    manager - via Telegram by default, or WhatsApp if MANAGER_WHATSAPP_NUMBER
+                                    is set (see the toggle explained up top)
+  order-view.js                 <- renders a stored order (incl. photos - see "How the manager sees
+                                    photos" below) as an HTML page; linked to from the manager notification
+                                    either way, but only load-bearing for WhatsApp mode
+  telegram-webhook.js           <- validates manager identity + order reply, triggers the deploy - the
+                                    only deploy trigger in Telegram mode, an alternative to
+                                    scripts/deploy-order.js in WhatsApp mode
+  deploy-site-background.js     <- builds the deploy zip, calls the Netlify API, replies with the live
+                                    link; the single gate against double-deploying one order, shared by
+                                    both telegram-webhook.js and scripts/deploy-order.js
 
-/scripts/generate-screenshots.js  <- headless-renders every template and writes catalog/screenshots/*.png
+/scripts/
+  generate-screenshots.js       <- headless-renders every template and writes catalog/screenshots/*.png
+  deploy-order.js               <- manually triggers deploy-site-background.js for one order id - only
+                                    needed in WhatsApp mode, once the manager confirms payment there and
+                                    tells you the order id (see the toggle explained up top)
 netlify.toml                    <- publish=public, functions=netlify/functions, includes template/shared
                                     source files in the function bundle (see comment in the file)
 package.json                    <- @netlify/blobs + jszip (function runtime deps), puppeteer-core (screenshot tooling only)
 .env                             <- local secrets for `netlify dev` (gitignored, never deployed)
 ```
+
+## How the manager sees photos (WhatsApp mode only)
+
+WhatsApp's click-to-chat links (`wa.me/<number>?text=...`) can only pre-fill text — there is no way to
+attach a file or photo through a link, on any platform. So the pre-filled WhatsApp message carries a short
+text summary plus a link to `order-view.js`, which renders the couple's uploaded hero/collage photos (and
+music) straight from the order already stored in Netlify Blobs by `order.js`. The manager opens that link
+to see everything, including once the site is live (the same link shows the final site URL once you've
+run `deploy-order`). The link is only as secret as the order id itself (an unguessable UUID) — the same
+trust model the Telegram `/bashta` flow already relied on. (In Telegram mode the Telegram notification
+itself carries this same link too, though the manager rarely needs it there since she can just ask the
+customer to resend a photo directly in the group if needed.)
 
 `public/` exists specifically so that `node_modules/`, `.env`, `scripts/`, and the function source never end
 up publishable — anything outside `public/` is invisible to both Netlify's own build and a manual
@@ -67,6 +103,27 @@ customer site can call its own relative `/.netlify/functions/*`.
    `https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=<your-site>/.netlify/functions/telegram-webhook`
 7. Set all five variables in Netlify's dashboard (Site settings → Environment variables) for production, and
    in `.env` locally for `netlify dev` (already gitignored).
+
+## Switching to WhatsApp mode (if Telegram gets blocked)
+
+Put the manager's WhatsApp number in `MANAGER_WHATSAPP_NUMBER`, in the format WhatsApp's click-to-chat API
+expects: digits only, country code first, no `+`, no spaces or dashes (e.g. `996700123456`) — in Netlify's
+dashboard for production, and in `.env` locally (also needed there for `scripts/deploy-order.js`, below).
+That's the entire switch — `order.js` picks it up automatically (see the toggle explained up top), no
+redeploy of code required, and unsetting it switches back just as instantly. The five Telegram variables
+above stay as they are; nothing about Telegram setup needs to change either way.
+
+Once WhatsApp mode is on, the manager confirms payment there and tells you the order id herself (she's no
+longer in a Telegram flow to reply `/bashta` from). Deploy it with:
+
+```bash
+npm run deploy-order -- <orderId>
+```
+
+Against a local `netlify dev`, that's all you need (it defaults to `http://localhost:8888`). Against
+production, pass the site URL too: `npm run deploy-order -- <orderId> https://your-site.netlify.app`.
+Check `order-view.js`'s link (see "How the manager sees photos" above) a few seconds later for the live
+site URL once the deploy finishes.
 
 ## Adding or editing a template design
 
@@ -137,10 +194,11 @@ npm install
 netlify dev
 ```
 
-This serves `public/` (storefront + templates + catalog) and all four functions together at the printed
+This serves `public/` (storefront + templates + catalog) and all five functions together at the printed
 local URL, reading secrets from `.env`. Open `/storefront/` to run through category → carousel → wizard →
 submit. The RSVP form on an individual template (e.g. `/templates/classic-earth/`) and the wizard's live
-preview both work the same way under `netlify dev`.
+preview both work the same way under `netlify dev`. With `MANAGER_WHATSAPP_NUMBER` set, submitting instead
+shows a `wa.me` button on the confirmation screen (no WhatsApp install needed to verify the link itself).
 
 To regenerate carousel screenshots after changing a template:
 
@@ -155,9 +213,15 @@ npm run screenshots
 - The couple's own `telegramChatId` (used for **guest RSVP** notifications on their deployed site, separate
   from the internal manager chat) isn't collected by the wizard — it's set after deploy once the couple has
   their own bot chat, same onboarding step as before.
-- A true "customer + bot + manager" three-way Telegram conversation isn't possible — bots can't create
-  group chats or add members via the Bot API. A private-chat relay (deep link `t.me/bot?start=<orderId>`,
-  bot forwards messages both directions) is the practical equivalent and is deferred to a later phase.
+- In WhatsApp mode, the customer-manager sales conversation happens entirely inside WhatsApp, outside this
+  app's control — there's no record here of what was actually said, only the original order snapshot
+  (`order-view.js`). If that ever needs to change (e.g. logging the conversation), a WhatsApp Business API
+  integration would replace the plain `wa.me` deep link used today.
+- `deploy-site-background.js`'s double-deploy guard (see README above) is a get-then-set check against
+  Netlify Blobs, not a real lock — best-effort, same caveat as `checkRateLimit` in `lib/security.js`. Two
+  triggers landing within milliseconds of each other could still both pass the check; in practice this
+  needs a manager's `/bashta` and your own `deploy-order` run (WhatsApp mode only) to race down to the
+  millisecond, which isn't realistic given a human is telling you the order id in the first place.
 - `@netlify/blobs` currently pulls in OpenTelemetry packages with known moderate-severity advisories
   (`npm audit`) — this is upstream in Netlify's own SDK, not fixable here without a breaking downgrade;
   worth re-checking when bumping `@netlify/blobs`.
