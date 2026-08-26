@@ -46,13 +46,8 @@
     <section id="screen-carousel" class="screen hidden">
       <button class="back-button" data-back="screen-category">← Артка</button>
       <h1>Дизайнды тандаңыз</h1>
-      <div id="type-tabs" class="type-tabs"></div>
-      <div class="carousel-wrap">
-        <button class="carousel-arrow carousel-arrow-left" aria-label="Мурунку">‹</button>
-        <div id="carousel-track" class="carousel-track"></div>
-        <button class="carousel-arrow carousel-arrow-right" aria-label="Кийинки">›</button>
-      </div>
-      <button id="use-template-button" class="primary-button" disabled>Колдонуу</button>
+      <nav id="type-nav" class="type-nav"></nav>
+      <div id="type-sections"></div>
     </section>
 
     <!-- Screen 3: wizard -->
@@ -142,7 +137,7 @@
         <div class="wizard-nav">
           <button id="wizard-prev" class="secondary-button">Артка</button>
           <button id="wizard-next" class="primary-button">Кийинки</button>
-          <button id="wizard-submit" class="primary-button hidden">Telegram аркылуу жөнөтүү</button>
+          <button id="wizard-submit" class="primary-button hidden">Жөнөтүү</button>
         </div>
       </div>
     </section>
@@ -150,7 +145,11 @@
     <!-- Screen 4: confirmation -->
     <section id="screen-confirmation" class="screen hidden">
       <h1>Рахмат!</h1>
-      <p>Сиздин буйрутмаңыз жөнөтүлдү. Төлөмдү тактоо үчүн жакында сиз менен байланышабыз.</p>
+      <!-- Default (Telegram-only) copy; app.js swaps this to the WhatsApp
+           version and reveals the link below only if order.js returns a
+           whatsappUrl (i.e. MANAGER_WHATSAPP_NUMBER is configured). -->
+      <p id="confirmation-message">Сиздин буйрутмаңыз жөнөтүлдү. Төлөмдү тактоо үчүн жакында сиз менен байланышабыз.</p>
+      <a id="confirmation-whatsapp-link" class="primary-button whatsapp-button hidden" target="_blank" rel="noopener">WhatsApp аркылуу байланышуу</a>
       <p class="order-id-line">Буйрутма номери: <span id="confirmation-order-id"></span></p>
     </section>
   </div>

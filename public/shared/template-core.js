@@ -26,7 +26,7 @@ function applyColorTheme(colorTheme = {}) {
 function applyHeroPhoto(heroPhotoUrl) {
   const hero = document.querySelector('.hero');
   if (!hero) return;
-  if (heroPhotoUrl) {
+  if (heroPhotoUrl && isSafeImageUrl(heroPhotoUrl)) {
     hero.style.setProperty('--hero-photo-url', `url("${heroPhotoUrl}")`);
     hero.classList.add('has-photo');
   } else {
@@ -86,24 +86,45 @@ function renderCalendar(dateStr) {
   `;
 }
 
+// Schemeless/relative paths are template-authored demo assets (e.g.
+// "../../shared/sample-photos/1.jpeg" in config.example.json) and always safe.
+// Any URL with an explicit scheme must be a photo upload (data:image/...) or
+// https: - this rejects javascript:/vbscript:/data:text-html etc. that a
+// crafted config could otherwise smuggle into an href/src.
+function isSafeImageUrl(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(url)) return true;
+  return /^(data:image\/|https:\/\/)/i.test(url);
+}
+
 // Opt-in: templates with <div id="collage-grid"></div> (inside a <section>)
 // get a photo grid rendered from config.collagePhotos; the whole section
 // hides itself when the customer hasn't uploaded any collage photos.
 function renderCollage(photos) {
   const container = document.getElementById('collage-grid');
   if (!container) return;
-  const list = photos || [];
+  const list = (photos || []).filter(isSafeImageUrl);
   const section = container.closest('section');
 
+  container.innerHTML = '';
   if (!list.length) {
     if (section) section.style.display = 'none';
-    container.innerHTML = '';
     return;
   }
   if (section) section.style.display = '';
-  container.innerHTML = list
-    .map((url) => `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="" /></a>`)
-    .join('');
+  // Built as real DOM nodes (not innerHTML + template string) so a URL can
+  // never break out of its attribute and inject markup.
+  list.forEach((url) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = '';
+    link.appendChild(img);
+    container.appendChild(link);
+  });
 }
 
 // Opt-in: templates with <p id="hosts-names"></p> (inside a <section>) show

@@ -2,7 +2,8 @@
   "name": "priglasi-invitations",
   "private": true,
   "scripts": {
-    "screenshots": "node scripts/generate-screenshots.js"
+    "screenshots": "node scripts/generate-screenshots.js",
+    "deploy-order": "node scripts/deploy-order.js"
   },
   "devDependencies": {
     "puppeteer-core": "^25.3.0"

@@ -47,4 +47,27 @@ function isAllowedOrigin(event, allowedHostSuffixes = []) {
   return allowedHostSuffixes.some((suffix) => host.endsWith(suffix));
 }
 
-module.exports = { getClientIp, checkRateLimit, isAllowedOrigin };
+// Shared with order.js (validating submitted config before storing it) and
+// order-view.js (defense-in-depth when rendering that stored config back out
+// as HTML for the manager) - only data: uploads and https: links are ever
+// legitimate for these fields, so anything else (javascript:, etc.) is rejected.
+function isSafeImageUrl(url) {
+  return typeof url === 'string' && /^(data:image\/|https:\/\/)/i.test(url);
+}
+
+function isSafeAudioUrl(url) {
+  return typeof url === 'string' && /^(data:audio\/|https:\/\/)/i.test(url);
+}
+
+function isSafeHttpsUrl(url) {
+  return typeof url === 'string' && /^https:\/\//i.test(url);
+}
+
+module.exports = {
+  getClientIp,
+  checkRateLimit,
+  isAllowedOrigin,
+  isSafeImageUrl,
+  isSafeAudioUrl,
+  isSafeHttpsUrl,
+};

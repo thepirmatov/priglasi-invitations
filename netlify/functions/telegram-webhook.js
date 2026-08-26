@@ -61,8 +61,10 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: 'ok' };
   }
 
-  // Mark in-progress immediately to narrow the race window against a duplicate /bashta.
-  await store.setJSON(orderId, { ...order, status: 'in_progress' });
+  // deploy-site-background.js (not here) is what actually marks the order
+  // in_progress now - it's the single gate shared with scripts/deploy-order.js
+  // (the manual WhatsApp-flow trigger, see README), so it's the only place
+  // that can reliably catch a duplicate trigger from either path.
   await reply('Даярдалууда...');
 
   const siteUrl = process.env.URL || process.env.DEPLOY_URL || '';
