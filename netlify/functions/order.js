@@ -1,10 +1,17 @@
 const { getStore } = require('@netlify/blobs');
-const { getClientIp, checkRateLimit, isAllowedOrigin, isSafeImageUrl, isSafeAudioUrl } = require('./lib/security');
+const { getClientIp, checkRateLimit, isAllowedOrigin, getCorsHeaders, isSafeImageUrl, isSafeAudioUrl } = require('./lib/security');
 
 // Mirrors the client-side cap in public/storefront/app.js - a direct API call
 // bypasses that check, so it's enforced again here.
 const MAX_PAYLOAD_BYTES = 5.5 * 1024 * 1024;
 const MAX_COLLAGE_PHOTOS = 15;
+
+// Unset (default) means the storefront and this function are still on the
+// same Netlify site, so same-origin alone covers it - isAllowedOrigin/
+// getCorsHeaders below fall back to exactly today's behavior. Set this to the
+// bare domain (no scheme, e.g. "priglasi.com") once the storefront moves to
+// its own host (see README) - no other change needed at that point.
+const ALLOWED_DOMAINS = process.env.STOREFRONT_ORIGIN ? [process.env.STOREFRONT_ORIGIN] : [];
 
 function validate(payload) {
   const required = [
@@ -81,39 +88,48 @@ function buildWhatsAppUrl(number, text) {
 }
 
 exports.handler = async (event) => {
+  // A JSON POST body is a cross-origin "preflighted" request - the browser
+  // sends this OPTIONS request first and won't send the real POST at all
+  // unless it sees CORS headers here approving the caller's origin. A no-op
+  // until STOREFRONT_ORIGIN is set (see ALLOWED_DOMAINS above).
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers: getCorsHeaders(event, ALLOWED_DOMAINS), body: '' };
+  }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  // Orders only ever come from this storefront itself, so cross-site Origins are rejected outright.
-  if (!isAllowedOrigin(event)) {
-    return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+  const corsHeaders = getCorsHeaders(event, ALLOWED_DOMAINS);
+
+  // Orders only ever come from the storefront itself, so any other Origin is rejected outright.
+  if (!isAllowedOrigin(event, ALLOWED_DOMAINS)) {
+    return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: 'Forbidden' }) };
   }
 
   const withinLimit = await checkRateLimit(`order:${getClientIp(event)}`, { limit: 5, windowMs: 15 * 60 * 1000 });
   if (!withinLimit) {
-    return { statusCode: 429, body: JSON.stringify({ error: 'Too many requests, try again later' }) };
+    return { statusCode: 429, headers: corsHeaders, body: JSON.stringify({ error: 'Too many requests, try again later' }) };
   }
 
   const rawBody = event.body || '';
   const bodyBytes = event.isBase64Encoded ? Buffer.byteLength(rawBody, 'base64') : Buffer.byteLength(rawBody, 'utf8');
   if (bodyBytes > MAX_PAYLOAD_BYTES) {
-    return { statusCode: 413, body: JSON.stringify({ error: 'Payload too large' }) };
+    return { statusCode: 413, headers: corsHeaders, body: JSON.stringify({ error: 'Payload too large' }) };
   }
 
   let payload;
   try {
     payload = JSON.parse(rawBody || '{}');
   } catch (err) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+    return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Invalid JSON body' }) };
   }
 
   const { missing, invalid } = validate(payload);
   if (missing.length > 0) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Missing required fields', missing }) };
+    return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Missing required fields', missing }) };
   }
   if (invalid.length > 0) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid fields', invalid }) };
+    return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Invalid fields', invalid }) };
   }
 
   // MANAGER_WHATSAPP_NUMBER is the switch: unset (the default today) keeps the
@@ -124,7 +140,7 @@ exports.handler = async (event) => {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const managerChatId = process.env.MANAGER_CHAT_ID;
   if (!managerWhatsAppNumber && (!botToken || !managerChatId)) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'TELEGRAM_BOT_TOKEN / MANAGER_CHAT_ID not configured' }) };
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'TELEGRAM_BOT_TOKEN / MANAGER_CHAT_ID not configured' }) };
   }
 
   const store = getStore('orders');
@@ -149,7 +165,7 @@ exports.handler = async (event) => {
         console.error('Telegram backup notification failed:', err);
       }
     }
-    return { statusCode: 200, body: JSON.stringify({ orderId: payload.orderId, whatsappUrl }) };
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ orderId: payload.orderId, whatsappUrl }) };
   }
 
   const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -161,9 +177,10 @@ exports.handler = async (event) => {
     const errorBody = await telegramResponse.text();
     return {
       statusCode: 502,
+      headers: corsHeaders,
       body: JSON.stringify({ error: 'Order stored but failed to notify manager', details: errorBody }),
     };
   }
 
-  return { statusCode: 200, body: JSON.stringify({ orderId: payload.orderId }) };
+  return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ orderId: payload.orderId }) };
 };

@@ -6,3 +6,5 @@ node_modules/
 .claude/
 # Added by code-review-graph
 .code-review-graph/
+# Netlify CLI / edge-functions Deno bootstrap artifact
+deno.lock

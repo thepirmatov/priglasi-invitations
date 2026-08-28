@@ -2,6 +2,7 @@ const { getStore } = require('@netlify/blobs');
 const JSZip = require('jszip');
 const fs = require('fs');
 const path = require('path');
+const { createSpreadsheet, shareSpreadsheet } = require('./lib/google-sheets');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'public', 'templates');
 const SHARED_DIR = path.join(__dirname, '..', '..', 'public', 'shared');
@@ -30,7 +31,7 @@ function slugify(str, orderId) {
   return `${base}-${orderId.slice(0, 6)}`;
 }
 
-async function buildDeployZip(templateId, config) {
+async function buildDeployZip(templateId, config, orderId) {
   const templateDir = path.join(TEMPLATES_DIR, templateId);
   let html = fs.readFileSync(path.join(templateDir, 'index.html'), 'utf8');
   // Templates reference shared/ two directories up for local dev; the deploy
@@ -51,8 +52,9 @@ async function buildDeployZip(templateId, config) {
 
   // This deployed site has no netlify/functions of its own (see comment on
   // rsvpEndpoint below), so config.json must carry an absolute endpoint
-  // pointing back at the main storefront site's rsvp function.
-  const configWithRsvp = { ...config, rsvpEndpoint: `${process.env.URL}/.netlify/functions/rsvp` };
+  // pointing back at the main storefront site's rsvp function. orderId rides
+  // along too - rsvp.js needs it to tag which couple's Google Sheet rows are whose.
+  const configWithRsvp = { ...config, orderId, rsvpEndpoint: `${process.env.URL}/.netlify/functions/rsvp` };
 
   const zip = new JSZip();
   zip.file('index.html', html);
@@ -83,6 +85,23 @@ async function deployToSite(authToken, siteId, zipBuffer) {
   });
   if (!res.ok) throw new Error(`Netlify deploy failed: ${res.status} ${await res.text()}`);
   return res.json();
+}
+
+// One Google Sheet per order (not shared across couples - see README), so the
+// couple's own RSVP data can be handed to them directly (email or link) with
+// no risk of exposing anyone else's guest list. Best-effort: this must never
+// take down a deploy that otherwise succeeded, so callers catch and continue.
+async function createRsvpSheet(coupleNames, orderId) {
+  const managerEmail = process.env.MANAGER_GOOGLE_EMAIL;
+  if (!managerEmail || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) return null;
+
+  const title = `RSVP - ${coupleNames} - ${orderId.slice(0, 8)}`;
+  const header = ['Убакыт', 'Конок', 'Катышуу', 'Конок саны', 'Тарап'];
+  const { spreadsheetId, spreadsheetUrl } = await createSpreadsheet(title, header);
+  // The sheet is created inside the service account's own Drive space -
+  // invisible to you until it's shared with your own Google account.
+  await shareSpreadsheet(spreadsheetId, managerEmail, 'writer');
+  return { sheetId: spreadsheetId, sheetUrl: spreadsheetUrl };
 }
 
 async function sendTelegramMessage(botToken, chatId, replyToMessageId, text) {
@@ -129,14 +148,33 @@ exports.handler = async (event) => {
   await store.setJSON(orderId, { ...order, status: 'in_progress' });
 
   try {
-    const zipBuffer = await buildDeployZip(order.templateId, order.config);
+    const zipBuffer = await buildDeployZip(order.templateId, order.config, orderId);
     const slug = slugify(order.config.coupleNames, orderId);
     const site = await createNetlifySite(netlifyToken, slug);
     await deployToSite(netlifyToken, site.id, zipBuffer);
 
+    let sheet = null;
+    try {
+      sheet = await createRsvpSheet(order.config.coupleNames, orderId);
+    } catch (err) {
+      console.error('RSVP sheet creation failed (site deploy still succeeded):', err);
+    }
+
     const siteUrl = site.ssl_url || site.url;
-    await store.setJSON(orderId, { ...order, status: 'completed', siteUrl, completedAt: new Date().toISOString() });
-    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Даяр! ${siteUrl}`);
+    await store.setJSON(orderId, {
+      ...order,
+      status: 'completed',
+      siteUrl,
+      sheetId: sheet && sheet.sheetId,
+      sheetUrl: sheet && sheet.sheetUrl,
+      completedAt: new Date().toISOString(),
+    });
+    await sendTelegramMessage(
+      botToken,
+      chatId,
+      replyToMessageId,
+      `Даяр! ${siteUrl}${sheet ? `\nRSVP таблица: ${sheet.sheetUrl}` : ''}`
+    );
   } catch (err) {
     console.error(err);
     await store.setJSON(orderId, { ...order, status: 'pending' });

@@ -52,6 +52,10 @@ function renderOrderHtml(order) {
     ? `<div class="row"><span class="row-label">Даяр сайт</span><span class="row-value"><a href="${escapeHtml(order.siteUrl)}" target="_blank" rel="noopener">${escapeHtml(order.siteUrl)}</a></span></div>`
     : '';
 
+  const sheetLine = order.status === 'completed' && order.sheetUrl
+    ? `<div class="row"><span class="row-label">RSVP таблица</span><span class="row-value"><a href="${escapeHtml(order.sheetUrl)}" target="_blank" rel="noopener">Google Sheets</a></span></div>`
+    : '';
+
   return `<!doctype html>
 <html lang="ky">
 <head>
@@ -92,6 +96,7 @@ function renderOrderHtml(order) {
     ${renderRow('Кардар', customer.name)}
     ${renderRow('Байланыш', customer.contact)}
     ${siteLine}
+    ${sheetLine}
     ${scheduleBlock}
     ${renderPhotoGrid(config.collagePhotos)}
     ${musicBlock}
