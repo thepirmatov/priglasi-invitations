@@ -2,6 +2,7 @@ const { getStore } = require('@netlify/blobs');
 
 const ORDER_ID_PATTERN = /#ORD_([\w-]+)/;
 const COMMAND_PATTERN = /^\/(bashta|create)\b/;
+const ID_COMMAND_PATTERN = /^\/id\b/;
 
 async function sendReply(botToken, chatId, replyToMessageId, text) {
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -24,17 +25,32 @@ exports.handler = async (event) => {
   }
 
   const message = update.message;
-  if (!message || !message.text || !COMMAND_PATTERN.test(message.text.trim())) {
+  if (!message || !message.text) {
+    return { statusCode: 200, body: 'ok' };
+  }
+  const text = message.text.trim();
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const reply = (replyText) => sendReply(botToken, message.chat.id, message.message_id, replyText);
+
+  // No auth check: this is how you find the ids to put in MANAGER_TELEGRAM_IDS /
+  // MANAGER_CHAT_ID in the first place, so it can't itself require being listed
+  // there yet - works for anyone, in a DM or a group, same as /bashta's own
+  // reply-to-message-id targeting.
+  if (ID_COMMAND_PATTERN.test(text)) {
+    const senderId = (message.from && message.from.id) || 'белгисиз';
+    await reply(`Сиздин Telegram ID: ${senderId}\nБул чаттын ID: ${message.chat.id}`);
     return { statusCode: 200, body: 'ok' };
   }
 
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!COMMAND_PATTERN.test(text)) {
+    return { statusCode: 200, body: 'ok' };
+  }
+
   const managerIds = (process.env.MANAGER_TELEGRAM_IDS || '')
     .split(',')
     .map((id) => id.trim())
     .filter(Boolean);
   const senderId = String((message.from && message.from.id) || '');
-  const reply = (text) => sendReply(botToken, message.chat.id, message.message_id, text);
 
   // Authorization boundary for the whole deploy pipeline - must run before anything else.
   if (!managerIds.includes(senderId)) {

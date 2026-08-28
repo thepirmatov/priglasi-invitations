@@ -433,15 +433,17 @@ function setupMusic(musicUrl) {
 }
 
 let rsvpInitialized = false;
-function setupRsvpForm(telegramChatId, rsvpEndpoint) {
+function setupRsvpForm(rsvpEndpoint, orderId) {
   const form = document.getElementById('rsvp-form');
   if (!form) return;
-  form.dataset.telegramChatId = telegramChatId || '';
   // Every deployed invitation lives on its own separate Netlify site (see
   // deploy-site-background.js) and does not carry its own copy of rsvp.js,
   // so this must point back at the main storefront site's function unless
   // explicitly overridden.
   form.dataset.rsvpEndpoint = rsvpEndpoint || '/.netlify/functions/rsvp';
+  // RSVPs land in that order's own Google Sheet (see README) - this is how
+  // rsvp.js finds which one.
+  form.dataset.orderId = orderId || '';
 
   if (rsvpInitialized) return;
   rsvpInitialized = true;
@@ -465,8 +467,12 @@ function setupRsvpForm(telegramChatId, rsvpEndpoint) {
 
     // guestCount/side are optional, only present on templates with the
     // guest-count stepper / bride-groom side picker (see setupGuestCountStepper
-    // and setupSideLabels) - rsvp.js includes them in the Telegram message when present.
-    const body = { telegramChatId: form.dataset.telegramChatId, guestName, attendance };
+    // and setupSideLabels) - rsvp.js includes them as extra Sheet columns when present.
+    const body = {
+      orderId: form.dataset.orderId,
+      guestName,
+      attendance,
+    };
     const guestCountEl = document.getElementById('guest-count');
     if (guestCountEl && attendance === 'yes') body.guestCount = Number(guestCountEl.textContent);
     const sideChecked = document.querySelector('input[name="side"]:checked');
@@ -507,7 +513,7 @@ function render(config) {
   renderHosts(config.hostsNames);
   startCountdown(config.date, config.time);
   setupMusic(config.musicUrl);
-  setupRsvpForm(config.telegramChatId, config.rsvpEndpoint);
+  setupRsvpForm(config.rsvpEndpoint, config.orderId);
   setupGuestCountStepper();
   setupSideLabels(config.coupleNames);
   setupRevealGate();

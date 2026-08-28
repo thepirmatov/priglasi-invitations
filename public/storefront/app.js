@@ -14,6 +14,13 @@ const MAX_PAYLOAD_BYTES = 5.5 * 1024 * 1024;
 // from before a template's screenshot was regenerated.
 const CACHE_BUST = Date.now();
 
+// Empty string means "same origin" (today's setup: storefront and functions
+// both served from this Netlify site) - fill in the functions' own origin
+// (e.g. "https://priglasi.netlify.app", no trailing slash) once the storefront
+// moves to a separate host, and set the matching STOREFRONT_ORIGIN in
+// order.js's environment (see README) so it accepts requests from there.
+const FUNCTIONS_ORIGIN = '';
+
 const state = {
   category: null,
   types: [],
@@ -489,7 +496,6 @@ function currentConfig() {
     collagePhotos: state.collagePhotos,
     musicUrl: document.getElementById('field-musicUrl').value || '',
     colorTheme: defaults.colorTheme,
-    telegramChatId: '',
   };
 }
 
@@ -655,7 +661,7 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
   }
 
   try {
-    const res = await fetch('/.netlify/functions/order', {
+    const res = await fetch(`${FUNCTIONS_ORIGIN}/.netlify/functions/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
