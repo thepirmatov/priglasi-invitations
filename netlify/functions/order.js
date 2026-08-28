@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getBlobStore } = require('./lib/blobs');
 const { getClientIp, checkRateLimit, isAllowedOrigin, getCorsHeaders, isSafeImageUrl, isSafeAudioUrl } = require('./lib/security');
 
 // Mirrors the client-side cap in public/storefront/app.js - a direct API call
@@ -143,7 +143,7 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'TELEGRAM_BOT_TOKEN / MANAGER_CHAT_ID not configured' }) };
   }
 
-  const store = getStore('orders');
+  const store = getBlobStore('orders');
   await store.setJSON(payload.orderId, {
     ...payload,
     status: 'pending',

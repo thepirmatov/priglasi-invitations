@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getBlobStore } = require('./blobs');
 
 function getClientIp(event) {
   const headers = event.headers || {};
@@ -10,7 +10,7 @@ function getClientIp(event) {
 // Netlify Blobs, so a tight burst of concurrent requests can slip past the limit.
 // Good enough to blunt casual scripted spam without adding an external service.
 async function checkRateLimit(key, { limit, windowMs }) {
-  const store = getStore('ratelimits');
+  const store = getBlobStore('ratelimits');
   const now = Date.now();
   const existing = await store.get(key, { type: 'json' });
 

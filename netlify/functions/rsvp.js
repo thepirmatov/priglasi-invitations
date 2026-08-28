@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getBlobStore } = require('./lib/blobs');
 const { getClientIp, checkRateLimit, isAllowedOrigin, getCorsHeaders } = require('./lib/security');
 const { appendRow } = require('./lib/google-sheets');
 
@@ -58,7 +58,7 @@ exports.handler = async (event) => {
   // means an order deployed before this feature existed, or one whose sheet
   // creation failed (best-effort - see createRsvpSheet), fails clearly here
   // instead of silently writing to the wrong place.
-  const order = await getStore('orders').get(orderId, { type: 'json' });
+  const order = await getBlobStore('orders').get(orderId, { type: 'json' });
   if (!order || !order.sheetId) {
     return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'No RSVP sheet found for this order' }) };
   }
