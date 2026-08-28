@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getBlobStore } = require('./lib/blobs');
 const { getClientIp, checkRateLimit, isSafeImageUrl, isSafeAudioUrl, isSafeHttpsUrl } = require('./lib/security');
 
 const STATUS_LABELS = {
@@ -123,7 +123,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: 'Missing orderId' };
   }
 
-  const store = getStore('orders');
+  const store = getBlobStore('orders');
   const order = await store.get(orderId, { type: 'json' });
   if (!order) {
     return { statusCode: 404, body: 'Order not found' };

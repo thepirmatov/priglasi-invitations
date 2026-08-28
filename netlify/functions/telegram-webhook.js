@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getBlobStore } = require('./lib/blobs');
 
 const ORDER_ID_PATTERN = /#ORD_([\w-]+)/;
 const COMMAND_PATTERN = /^\/(bashta|create)\b/;
@@ -66,7 +66,7 @@ exports.handler = async (event) => {
   }
   const orderId = match[1];
 
-  const store = getStore('orders');
+  const store = getBlobStore('orders');
   const order = await store.get(orderId, { type: 'json' });
   if (!order) {
     await reply(`Буйрутма табылган жок: ${orderId}`);

@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getBlobStore } = require('./lib/blobs');
 const JSZip = require('jszip');
 const fs = require('fs');
 const path = require('path');
@@ -128,7 +128,7 @@ exports.handler = async (event) => {
   const { orderId, chatId, replyToMessageId } = JSON.parse(event.body || '{}');
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const netlifyToken = process.env.NETLIFY_AUTH_TOKEN;
-  const store = getStore('orders');
+  const store = getBlobStore('orders');
 
   const order = await store.get(orderId, { type: 'json' });
   if (!order) {
