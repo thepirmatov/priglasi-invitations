@@ -58,6 +58,21 @@
           <label><input type="radio" name="attendance" value="no" /> Катыша албайм</label>
         </fieldset>
 
+        <div id="guest-count-block" class="guest-count-block hidden">
+          <label>Канча адам болосуздар?</label>
+          <div class="stepper">
+            <button type="button" id="guest-count-decrease" aria-label="Азайтуу">&minus;</button>
+            <span id="guest-count">1</span>
+            <button type="button" id="guest-count-increase" aria-label="Көбөйтүү">+</button>
+          </div>
+        </div>
+
+        <fieldset class="side-options">
+          <legend>Кимдин коногусуз?</legend>
+          <label><input type="radio" name="side" /> <span id="side-label-a"></span></label>
+          <label><input type="radio" name="side" /> <span id="side-label-b"></span></label>
+        </fieldset>
+
         <button type="submit">Жөнөтүү</button>
         <p id="rsvp-status" class="rsvp-status" role="status"></p>
       </form>

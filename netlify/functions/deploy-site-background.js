@@ -2,7 +2,7 @@ const { getBlobStore } = require('./lib/blobs');
 const JSZip = require('jszip');
 const fs = require('fs');
 const path = require('path');
-const { createSpreadsheet, shareSpreadsheet } = require('./lib/google-sheets');
+const { createSpreadsheet } = require('./lib/google-sheets');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'public', 'templates');
 const SHARED_DIR = path.join(__dirname, '..', '..', 'public', 'shared');
@@ -92,22 +92,20 @@ async function deployToSite(authToken, siteId, zipBuffer) {
 // no risk of exposing anyone else's guest list. Best-effort: this must never
 // take down a deploy that otherwise succeeded, so callers catch and continue.
 async function createRsvpSheet(coupleNames, orderId) {
-  const managerEmail = process.env.MANAGER_GOOGLE_EMAIL;
-  if (!managerEmail || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-    console.error('RSVP sheet skipped: MANAGER_GOOGLE_EMAIL or GOOGLE_SERVICE_ACCOUNT_KEY not set');
+  if (!process.env.GOOGLE_OAUTH_CLIENT_ID || !process.env.GOOGLE_OAUTH_CLIENT_SECRET || !process.env.GOOGLE_OAUTH_REFRESH_TOKEN) {
+    console.error('RSVP sheet skipped: GOOGLE_OAUTH_CLIENT_ID / GOOGLE_OAUTH_CLIENT_SECRET / GOOGLE_OAUTH_REFRESH_TOKEN not set');
     return null;
   }
 
   const title = `RSVP - ${coupleNames} - ${orderId.slice(0, 8)}`;
   const header = ['Убакыт', 'Конок', 'Катышуу', 'Конок саны', 'Тарап'];
-  // See createSpreadsheet's own comment (lib/google-sheets.js) - without a
-  // shared folder to create the file inside, this fails on any service
-  // account Google didn't grant its own Drive storage quota (the common
-  // case today).
-  const { spreadsheetId, spreadsheetUrl } = await createSpreadsheet(title, header, process.env.GOOGLE_DRIVE_FOLDER_ID);
-  // Shared with you too (not just the folder) so it still shows up even if
-  // you later revoke the folder-level share or move the file out.
-  await shareSpreadsheet(spreadsheetId, managerEmail, 'writer');
+  // Same split template-core.js's setupSideLabels does client-side, so the
+  // count block's column headers always match the actual "Тарап" values
+  // guests submit (see createSpreadsheet's own comment).
+  const [nameA, nameB] = (coupleNames || '').split('&').map((part) => part.trim());
+  const { spreadsheetId, spreadsheetUrl } = await createSpreadsheet(
+    title, header, nameA, nameB, process.env.GOOGLE_DRIVE_FOLDER_ID
+  );
   return { sheetId: spreadsheetId, sheetUrl: spreadsheetUrl };
 }
 
