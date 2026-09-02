@@ -123,29 +123,35 @@ zero risk of them ever seeing another couple's data, since sharing is inherently
 The tradeoff is real Google API automation (create + share a spreadsheet, not just append a row to one you
 already made by hand) - see setup below.
 
-The sheet is created inside the service account's own Drive space, invisible to anyone until
-`createRsvpSheet` shares it with `MANAGER_GOOGLE_EMAIL` (**Editor** access) right after creating it - that's
-you, so you can find it in your own Drive, rename it, or reshare it with the couple. Its link also shows up
-in the Telegram "Даяр!" deploy-completion message and on `order-view.js`. If sheet creation itself fails
-(missing/misconfigured Google credentials, API hiccup), that's logged and swallowed, never fails the
-deploy - the site is the part that actually matters; `rsvp.js` just returns a clear error for that one
-order's guests until it's sorted out, rather than silently writing to the wrong place.
+The sheet is created inside a Drive folder you own and shared with the service account (see setup below),
+invisible to anyone else until `createRsvpSheet` also shares it directly with `MANAGER_GOOGLE_EMAIL`
+(**Editor** access) right after creating it - that's you, so you can find it in your own Drive, rename it, or
+reshare it with the couple. Its link also shows up in the Telegram "Даяр!" deploy-completion message and on
+`order-view.js`. If sheet creation itself fails (missing/misconfigured Google credentials, API hiccup),
+that's logged and swallowed, never fails the deploy - the site is the part that actually matters; `rsvp.js`
+just returns a clear error for that one order's guests until it's sorted out, rather than silently writing
+to the wrong place.
 
 Authentication is a service account, self-signing a JWT with Node's built-in `crypto` (see
 `lib/google-sheets.js`) - no `googleapis`/`google-auth-library` dependency needed. Setup:
 
 1. In the [Google Cloud Console](https://console.cloud.google.com/), create a project (or reuse one) and
-   enable both the **Google Sheets API** and the **Google Drive API** (creation uses Sheets, sharing uses
-   Drive).
+   enable both the **Google Sheets API** and the **Google Drive API** (creation uses Drive, sharing uses
+   Drive too).
 2. Create a **service account**, then create a JSON key for it and download it.
 3. Set `MANAGER_GOOGLE_EMAIL` (your own Google account - every order's sheet gets shared with this) and
    `GOOGLE_SERVICE_ACCOUNT_KEY` (the **entire downloaded JSON file's content, as one line**) in Netlify's
    dashboard and `.env`. One line matters: the key's PEM private key has real newlines, which survive fine
    *inside* a JSON string as escaped `\n`, but Netlify's env var UI doesn't reliably preserve literal
    newlines pasted directly into a value.
-
-Nothing to create or share by hand beyond that - the service account creates and shares a fresh sheet for
-every order automatically.
+4. Google gives newly created service accounts zero Drive storage quota of their own, so creating a file
+   *as* the service account (in its own space) fails with a 403 on essentially every project set up today.
+   The fix: create a folder in your own Drive, share it with the service account's `client_email` (from the
+   downloaded JSON key) with **Editor** access, open the folder and copy the id out of its URL
+   (`drive.google.com/drive/folders/<id>`), and set that as `GOOGLE_DRIVE_FOLDER_ID`. Every order's sheet is
+   then created as a child of that folder, so it counts against *your* quota instead of the service
+   account's - and you'll also see every sheet appear in that one folder automatically, on top of the
+   direct per-sheet share in step 3 above.
 
 ## One-time setup
 

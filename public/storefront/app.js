@@ -3,8 +3,12 @@ const MAX_COLLAGE_PHOTOS = 15;
 // A raw MP3 people actually upload (not link) is much bigger than a compressed
 // photo and can't be shrunk the same way (no simple "resize dimensions" trick
 // for audio), so it gets its own explicit cap - clearly enforced up front
-// rather than only failing later at the total-payload check below.
-const MAX_MUSIC_BYTES = 4 * 1024 * 1024;
+// rather than only failing later at the total-payload check below. Checked
+// against the file's raw byte size, but what actually lands in the payload
+// is a base64 data URL (~33% bigger) - capped well under MAX_PAYLOAD_BYTES
+// below so a max-size song still leaves real room for photos, instead of
+// nearly filling the whole budget by itself.
+const MAX_MUSIC_BYTES = 2.5 * 1024 * 1024;
 // Netlify Functions cap synchronous request bodies at 6MB; order.js is synchronous
 // (it notifies Telegram inline), so the whole JSON payload - hero photo, every
 // collage photo, and the music file, all base64 (~33% bigger than raw) - has to

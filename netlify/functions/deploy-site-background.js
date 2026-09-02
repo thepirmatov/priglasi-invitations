@@ -100,9 +100,13 @@ async function createRsvpSheet(coupleNames, orderId) {
 
   const title = `RSVP - ${coupleNames} - ${orderId.slice(0, 8)}`;
   const header = ['Убакыт', 'Конок', 'Катышуу', 'Конок саны', 'Тарап'];
-  const { spreadsheetId, spreadsheetUrl } = await createSpreadsheet(title, header);
-  // The sheet is created inside the service account's own Drive space -
-  // invisible to you until it's shared with your own Google account.
+  // See createSpreadsheet's own comment (lib/google-sheets.js) - without a
+  // shared folder to create the file inside, this fails on any service
+  // account Google didn't grant its own Drive storage quota (the common
+  // case today).
+  const { spreadsheetId, spreadsheetUrl } = await createSpreadsheet(title, header, process.env.GOOGLE_DRIVE_FOLDER_ID);
+  // Shared with you too (not just the folder) so it still shows up even if
+  // you later revoke the folder-level share or move the file out.
   await shareSpreadsheet(spreadsheetId, managerEmail, 'writer');
   return { sheetId: spreadsheetId, sheetUrl: spreadsheetUrl };
 }
