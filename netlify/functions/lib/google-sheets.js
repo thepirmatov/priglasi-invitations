@@ -69,26 +69,53 @@ async function appendRow(spreadsheetId, range, values) {
   return res.json();
 }
 
-// Creates a new spreadsheet (one per order - see README) with a single
-// "RSVPs" sheet and a header row already written. Returns { spreadsheetId,
-// spreadsheetUrl }. The spreadsheet is created inside the service account's
-// own Drive space, invisible to anyone else until shareSpreadsheet is called.
-async function createSpreadsheet(title, headerRow) {
+// Renames the default (first, sheetId 0) sheet tab a freshly created
+// spreadsheet always starts with - Drive API's files.create (unlike the
+// Sheets API's own spreadsheets.create) has no way to name that tab up front.
+async function renameFirstSheet(spreadsheetId, title) {
   const accessToken = await getAccessToken();
-  const res = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      properties: { title },
-      sheets: [{ properties: { title: 'RSVPs' } }],
+      requests: [{ updateSheetProperties: { properties: { sheetId: 0, title }, fields: 'title' } }],
+    }),
+  });
+  if (!res.ok) throw new Error(`Sheet rename failed: ${res.status} ${await res.text()}`);
+}
+
+// Creates a new spreadsheet (one per order - see README) with a single
+// "RSVPs" sheet and a header row already written. Returns { spreadsheetId,
+// spreadsheetUrl }.
+//
+// Google stopped giving new service accounts any Drive storage quota of
+// their own (see README), so spreadsheets.create - which always creates the
+// file inside the *caller's* Drive space - fails with a 403 on every fresh
+// service account. Creating the file as a child of a folder you (a human
+// with real storage) already own and shared with the service account's
+// client_email sidesteps that entirely: the file counts against the folder
+// owner's quota instead. folderId is that shared folder's id
+// (GOOGLE_DRIVE_FOLDER_ID) - required in practice, but kept optional here in
+// case a future caller's service account does have its own quota (e.g. one
+// covered by domain-wide delegation on a Workspace account).
+async function createSpreadsheet(title, headerRow, folderId) {
+  const accessToken = await getAccessToken();
+  const res = await fetch('https://www.googleapis.com/drive/v3/files?fields=id,webViewLink', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: title,
+      mimeType: 'application/vnd.google-apps.spreadsheet',
+      parents: folderId ? [folderId] : undefined,
     }),
   });
   if (!res.ok) throw new Error(`Sheets create failed: ${res.status} ${await res.text()}`);
   const data = await res.json();
 
-  await appendRow(data.spreadsheetId, 'RSVPs!A:E', headerRow);
+  await renameFirstSheet(data.id, 'RSVPs');
+  await appendRow(data.id, 'RSVPs!A:E', headerRow);
 
-  return { spreadsheetId: data.spreadsheetId, spreadsheetUrl: data.spreadsheetUrl };
+  return { spreadsheetId: data.id, spreadsheetUrl: data.webViewLink };
 }
 
 // Grants `role` ("writer" or "reader") on the spreadsheet to a specific
