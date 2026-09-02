@@ -93,7 +93,10 @@ async function deployToSite(authToken, siteId, zipBuffer) {
 // take down a deploy that otherwise succeeded, so callers catch and continue.
 async function createRsvpSheet(coupleNames, orderId) {
   const managerEmail = process.env.MANAGER_GOOGLE_EMAIL;
-  if (!managerEmail || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) return null;
+  if (!managerEmail || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+    console.error('RSVP sheet skipped: MANAGER_GOOGLE_EMAIL or GOOGLE_SERVICE_ACCOUNT_KEY not set');
+    return null;
+  }
 
   const title = `RSVP - ${coupleNames} - ${orderId.slice(0, 8)}`;
   const header = ['Убакыт', 'Конок', 'Катышуу', 'Конок саны', 'Тарап'];
@@ -105,11 +108,14 @@ async function createRsvpSheet(coupleNames, orderId) {
 }
 
 async function sendTelegramMessage(botToken, chatId, replyToMessageId, text) {
-  await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text, reply_to_message_id: replyToMessageId }),
   });
+  if (!res.ok) {
+    console.error(`Telegram sendMessage failed: ${res.status} ${await res.text()}`);
+  }
 }
 
 exports.handler = async (event) => {
