@@ -87,17 +87,31 @@ exports.handler = async (event) => {
   await reply('Даярдалууда...');
 
   const siteUrl = process.env.URL || process.env.DEPLOY_URL || '';
-  await fetch(`${siteUrl}/.netlify/functions/deploy-site-background`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // deploy-site-background has no other way to tell a manager's approved /bashta
-      // apart from anyone who POSTs a guessed/leaked orderId directly - see INTERNAL_FUNCTION_SECRET
-      // in deploy-site-background.js.
-      'X-Internal-Secret': process.env.INTERNAL_FUNCTION_SECRET || '',
-    },
-    body: JSON.stringify({ orderId, chatId: message.chat.id, replyToMessageId: message.message_id }),
-  });
+  try {
+    const triggerRes = await fetch(`${siteUrl}/.netlify/functions/deploy-site-background`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // deploy-site-background has no other way to tell a manager's approved /bashta
+        // apart from anyone who POSTs a guessed/leaked orderId directly - see INTERNAL_FUNCTION_SECRET
+        // in deploy-site-background.js.
+        'X-Internal-Secret': process.env.INTERNAL_FUNCTION_SECRET || '',
+      },
+      body: JSON.stringify({ orderId, chatId: message.chat.id, replyToMessageId: message.message_id }),
+    });
+    // A background function returns this 202 before its own body runs, so this
+    // only ever catches the trigger request itself failing to land (wrong siteUrl,
+    // the function route not existing, a network error) - not anything that goes
+    // wrong inside deploy-site-background.js afterwards. Still better than the
+    // silent stuck-at-"pending" order this used to leave behind either way.
+    if (!triggerRes.ok) {
+      console.error(`deploy-site-background trigger failed: ${triggerRes.status} ${await triggerRes.text()}`);
+      await reply(`Ката кетти: фондук иштетүүнү баштоо мүмкүн болбоду (${triggerRes.status}).`);
+    }
+  } catch (err) {
+    console.error('deploy-site-background trigger request failed:', err);
+    await reply(`Ката кетти: фондук иштетүүнү баштоо мүмкүн болбоду (${err.message}).`);
+  }
 
   return { statusCode: 200, body: 'ok' };
 };
