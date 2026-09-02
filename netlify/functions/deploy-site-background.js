@@ -128,6 +128,10 @@ exports.handler = async (event) => {
   const expectedSecret = process.env.INTERNAL_FUNCTION_SECRET;
   const providedSecret = event.headers && (event.headers['x-internal-secret'] || event.headers['X-Internal-Secret']);
   if (!expectedSecret || providedSecret !== expectedSecret) {
+    // This is invisible to the /bashta caller - Netlify already returned it a 202 for
+    // triggering this background function before this code ran - so the function log
+    // is the only place a misconfigured/missing INTERNAL_FUNCTION_SECRET ever surfaces.
+    console.error('deploy-site-background: rejected request with invalid or missing X-Internal-Secret');
     return { statusCode: 403, body: '' };
   }
 
@@ -136,7 +140,18 @@ exports.handler = async (event) => {
   const netlifyToken = process.env.NETLIFY_AUTH_TOKEN;
   const store = getBlobStore('orders');
 
-  const order = await store.get(orderId, { type: 'json' });
+  // Same reasoning as the X-Internal-Secret check above: the /bashta caller already
+  // got its 202 by the time this code runs, so a thrown error here has no other way
+  // to reach the manager than this explicit catch - left unguarded, it silently
+  // strands the order at "pending" forever with zero indication anything went wrong.
+  let order;
+  try {
+    order = await store.get(orderId, { type: 'json' });
+  } catch (err) {
+    console.error('deploy-site-background: failed to read order:', err);
+    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: буйрутманы окуп болбоду (${err.message}).`);
+    return { statusCode: 202, body: '' };
+  }
   if (!order) {
     await sendTelegramMessage(botToken, chatId, replyToMessageId, `Буйрутма табылган жок: ${orderId}`);
     return { statusCode: 202, body: '' };
@@ -151,7 +166,13 @@ exports.handler = async (event) => {
     await sendTelegramMessage(botToken, chatId, replyToMessageId, `Бул буйрутма мурда иштелген (status: ${order.status}).`);
     return { statusCode: 202, body: '' };
   }
-  await store.setJSON(orderId, { ...order, status: 'in_progress' });
+  try {
+    await store.setJSON(orderId, { ...order, status: 'in_progress' });
+  } catch (err) {
+    console.error('deploy-site-background: failed to mark order in_progress:', err);
+    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: буйрутманын статусун жаңыртып болбоду (${err.message}).`);
+    return { statusCode: 202, body: '' };
+  }
 
   try {
     const zipBuffer = await buildDeployZip(order.templateId, order.config, orderId);
