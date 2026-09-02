@@ -5,11 +5,14 @@ const COMMAND_PATTERN = /^\/(bashta|create)\b/;
 const ID_COMMAND_PATTERN = /^\/id\b/;
 
 async function sendReply(botToken, chatId, replyToMessageId, text) {
-  await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text, reply_to_message_id: replyToMessageId }),
   });
+  if (!res.ok) {
+    console.error(`Telegram sendMessage failed: ${res.status} ${await res.text()}`);
+  }
 }
 
 exports.handler = async (event) => {
