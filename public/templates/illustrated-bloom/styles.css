@@ -160,17 +160,63 @@ h2 {
   background: #fff;
 }
 
-.attendance-options {
+.attendance-options,
+.side-options {
   border: none;
   padding: 0;
   margin: 0;
   display: flex;
   gap: 1.5rem;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
-.attendance-options legend {
+.attendance-options legend,
+.side-options legend {
   display: none;
+}
+
+.guest-count-block.hidden {
+  display: none;
+}
+
+.guest-count-block {
+  text-align: center;
+}
+
+.guest-count-block label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.stepper button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.stepper button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+#guest-count {
+  font-size: 1.1rem;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
 }
 
 .rsvp-form button {

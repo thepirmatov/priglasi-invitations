@@ -123,35 +123,39 @@ zero risk of them ever seeing another couple's data, since sharing is inherently
 The tradeoff is real Google API automation (create + share a spreadsheet, not just append a row to one you
 already made by hand) - see setup below.
 
-The sheet is created inside a Drive folder you own and shared with the service account (see setup below),
-invisible to anyone else until `createRsvpSheet` also shares it directly with `MANAGER_GOOGLE_EMAIL`
-(**Editor** access) right after creating it - that's you, so you can find it in your own Drive, rename it, or
-reshare it with the couple. Its link also shows up in the Telegram "Даяр!" deploy-completion message and on
+Every sheet is owned by you directly from the moment it's created (see Authentication below), so there's
+nothing further to share - it's already yours, findable in your own Drive, ready to reshare with the couple
+however you like. Its link also shows up in the Telegram "Даяр!" deploy-completion message and on
 `order-view.js`. If sheet creation itself fails (missing/misconfigured Google credentials, API hiccup),
 that's logged and swallowed, never fails the deploy - the site is the part that actually matters; `rsvp.js`
 just returns a clear error for that one order's guests until it's sorted out, rather than silently writing
 to the wrong place.
 
-Authentication is a service account, self-signing a JWT with Node's built-in `crypto` (see
-`lib/google-sheets.js`) - no `googleapis`/`google-auth-library` dependency needed. Setup:
+Authentication is OAuth as *you* (`lib/google-sheets.js` exchanges a long-lived refresh token for a fresh
+access token on every cold start) - deliberately not a service account. A bare service account always stays
+the owner of any file it creates, even one placed inside a folder you share with it, and it has zero Drive
+storage quota of its own - so file creation 403s no matter what, confirmed by Google support. The two
+official ways around that (Shared Drives, domain-wide delegation) both require a paid Google Workspace plan,
+not available on a personal Gmail account. Authenticating as you directly sidesteps this entirely: every
+sheet spends your real 15GB quota from the start, no workaround needed. Setup:
 
 1. In the [Google Cloud Console](https://console.cloud.google.com/), create a project (or reuse one) and
-   enable both the **Google Sheets API** and the **Google Drive API** (creation uses Drive, sharing uses
-   Drive too).
-2. Create a **service account**, then create a JSON key for it and download it.
-3. Set `MANAGER_GOOGLE_EMAIL` (your own Google account - every order's sheet gets shared with this) and
-   `GOOGLE_SERVICE_ACCOUNT_KEY` (the **entire downloaded JSON file's content, as one line**) in Netlify's
-   dashboard and `.env`. One line matters: the key's PEM private key has real newlines, which survive fine
-   *inside* a JSON string as escaped `\n`, but Netlify's env var UI doesn't reliably preserve literal
-   newlines pasted directly into a value.
-4. Google gives newly created service accounts zero Drive storage quota of their own, so creating a file
-   *as* the service account (in its own space) fails with a 403 on essentially every project set up today.
-   The fix: create a folder in your own Drive, share it with the service account's `client_email` (from the
-   downloaded JSON key) with **Editor** access, open the folder and copy the id out of its URL
-   (`drive.google.com/drive/folders/<id>`), and set that as `GOOGLE_DRIVE_FOLDER_ID`. Every order's sheet is
-   then created as a child of that folder, so it counts against *your* quota instead of the service
-   account's - and you'll also see every sheet appear in that one folder automatically, on top of the
-   direct per-sheet share in step 3 above.
+   enable both the **Google Sheets API** and the **Google Drive API**.
+2. **APIs & Services → Credentials → Create Credentials → OAuth client ID**, type **Desktop app**. Note the
+   client id and client secret.
+3. **APIs & Services → OAuth consent screen**: if it's in "Testing" mode, add the Google account you'll
+   authenticate as (yourself) under **Test users**, or it'll refuse to authorize.
+4. Get a refresh token via the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/):
+   click the gear icon → check **Use your own OAuth credentials** → paste your client id/secret from step 2.
+   In Step 1, enter scopes `https://www.googleapis.com/auth/spreadsheets` and
+   `https://www.googleapis.com/auth/drive.file`, then **Authorize APIs** and sign in as the account you want
+   every sheet to belong to. In Step 2, **Exchange authorization code for tokens** - copy the resulting
+   **Refresh token** (it doesn't expire on its own; it's only invalidated if you revoke it).
+5. Set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REFRESH_TOKEN` in Netlify's
+   dashboard and `.env`.
+6. Optional: create a folder in your Drive to keep every order's sheet organized, copy the id out of its URL
+   (`drive.google.com/drive/folders/<id>`), and set that as `GOOGLE_DRIVE_FOLDER_ID` - purely cosmetic now
+   (no quota implications either way), sheets land in Drive's root if this is unset.
 
 ## One-time setup
 

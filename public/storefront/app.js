@@ -344,7 +344,7 @@ async function selectTemplateAndProceed(templateId) {
 // --- Screen 3: wizard ---
 
 function clearWizardFields() {
-  ['coupleNames', 'heroPhotoUrl', 'date', 'time', 'venueName', 'venueAddress', 'mapUrl', 'dressCode', 'hostsNames', 'musicUrl', 'customerName', 'customerContact'].forEach((id) => {
+  ['brideName', 'groomName', 'heroPhotoUrl', 'date', 'time', 'venueName', 'venueAddress', 'mapUrl', 'dressCode', 'hostsNames', 'musicUrl', 'customerName', 'customerContact'].forEach((id) => {
     const el = document.getElementById(`field-${id}`);
     if (el) el.value = '';
   });
@@ -474,11 +474,23 @@ document.getElementById('field-collagePhotos-file').addEventListener('change', a
   }
 });
 
+// Two separate inputs (not one free-text "Name1 & Name2" field) so the "&"
+// separator - which setupSideLabels in template-core.js splits on to build
+// the guest-facing "whose guest are you?" options and the RSVP sheet's
+// bride/groom count columns - is always there and never depends on a
+// customer typing it correctly.
+function coupleNamesFromFields(defaults) {
+  const brideName = document.getElementById('field-brideName').value.trim();
+  const groomName = document.getElementById('field-groomName').value.trim();
+  if (!brideName && !groomName) return defaults.coupleNames;
+  return [brideName, groomName].filter(Boolean).join(' & ');
+}
+
 function currentConfig() {
   const defaults = state.selectedTemplateDefaults || {};
   return {
     eventType: state.category,
-    coupleNames: document.getElementById('field-coupleNames').value || defaults.coupleNames,
+    coupleNames: coupleNamesFromFields(defaults),
     // musicUrl/heroPhotoUrl deliberately do NOT fall back to the template's
     // demo asset: they're optional per the UI copy, and the preview must
     // stay pixel-identical to what actually gets deployed - defaulting to
@@ -513,7 +525,7 @@ function postPreviewUpdate() {
 // --- Draft persistence: resume after closing the tab (see persist.js) ---
 
 const DRAFT_FIELD_IDS = [
-  'coupleNames', 'heroPhotoUrl', 'date', 'time', 'venueName', 'venueAddress',
+  'brideName', 'groomName', 'heroPhotoUrl', 'date', 'time', 'venueName', 'venueAddress',
   'mapUrl', 'dressCode', 'hostsNames', 'musicUrl', 'customerName', 'customerContact',
 ];
 
