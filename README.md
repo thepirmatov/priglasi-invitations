@@ -57,7 +57,12 @@ designs and the wizard flow; use `netlify dev` (below) to test the full order �
   rsvp.js                       <- appends a guest RSVP as a row in that order's own Google Sheet (see below)
   order.js                      <- receives a wizard submission, stores it in Netlify Blobs, notifies the
                                     manager - via Telegram by default, or WhatsApp if MANAGER_WHATSAPP_NUMBER
-                                    is set (see the toggle explained up top)
+                                    is set (see the toggle explained up top) - the notification includes a
+                                    private edit link for the couple (see "Editing an order" below)
+  order-edit.js                 <- lets whoever holds an order's own edit link (GET) load it back into the
+                                    wizard and (POST) resubmit changes - updates the stored order in place if
+                                    it hasn't deployed yet, or triggers an in-place redeploy via
+                                    deploy-site-background.js if it has (see "Editing an order" below)
   order-view.js                 <- renders a stored order (incl. photos - see "How the manager sees
                                     photos" below) as an HTML page; linked to from the manager notification
                                     either way, but only load-bearing for WhatsApp mode
@@ -68,8 +73,11 @@ designs and the wizard flow; use `netlify dev` (below) to test the full order �
   deploy-site-background.js     <- builds the deploy zip, calls the Netlify API, creates that order's
                                     Google Sheet, replies with the live link; the single gate against
                                     double-deploying one order, shared by both telegram-webhook.js and
-                                    scripts/deploy-order.js
-  lib/google-sheets.js           <- service-account auth (self-signed JWT, no SDK dependency) + spreadsheet
+                                    scripts/deploy-order.js - also handles order-edit.js's `mode: 'redeploy'`
+                                    trigger, which reuses the existing site and RSVP sheet instead
+  lib/orderValidation.js         <- payload validation shared by order.js and order-edit.js, so a new order
+                                    and an edit can never be checked differently
+  lib/google-sheets.js           <- OAuth-as-you auth (see Authentication below) + spreadsheet
                                     create/share/append, used by deploy-site-background.js and rsvp.js
 
 /scripts/
@@ -156,6 +164,31 @@ sheet spends your real 15GB quota from the start, no workaround needed. Setup:
 6. Optional: create a folder in your Drive to keep every order's sheet organized, copy the id out of its URL
    (`drive.google.com/drive/folders/<id>`), and set that as `GOOGLE_DRIVE_FOLDER_ID` - purely cosmetic now
    (no quota implications either way), sheets land in Drive's root if this is unset.
+
+## Editing an order after submission
+
+Every order notification (and every "Даяр!" deploy-completion message) includes a private edit link -
+`<storefront>/?orderId=<id>` - safe to forward straight to the couple, no login involved: the order id itself
+(a short, unguessable code, see `generateOrderId` in `app.js`) is the only credential, same trust model
+`order-view.js` and `rsvp.js` already use for their own links.
+
+Opening that link loads the wizard pre-filled with everything the couple entered originally (via the raw
+`draft` snapshot `app.js` saves alongside every submission - a superset of the computed `config` actually
+used to render the site, since it keeps bride/groom names etc. as separate fields rather than the merged
+string `config.coupleNames` ends up as). Resubmitting from there hits `order-edit.js` instead of `order.js`:
+
+- **Not deployed yet** (`status: 'pending'`): the stored order is updated in place. Nothing else happens -
+  the manager's next `/bashta` picks up whatever is newest, same as always.
+- **Already deployed** (`status: 'completed'`): `order-edit.js` triggers `deploy-site-background.js` with
+  `mode: 'redeploy'`, which rebuilds the zip from the edited config and deploys it to the *same* Netlify
+  site (`order.siteId`, persisted since the original deploy) and reuses the existing RSVP sheet - an edit
+  never spends another site slot, and never orphans RSVP responses already collected under the old sheet.
+- **Currently deploying** (`status: 'in_progress'`): rejected with a "try again shortly" error - editing
+  mid-deploy would race the in-flight one.
+
+An order placed before this feature existed has no `draft` snapshot (and a `completed` one has no `siteId`)
+- `order-edit.js`/`deploy-site-background.js` degrade to a clear error message rather than a broken edit
+  in either case, so the fix there is a manual redeploy (`scripts/deploy-order.js`), not the edit link.
 
 ## One-time setup
 
@@ -298,6 +331,10 @@ npm run screenshots
 - `@netlify/blobs` currently pulls in OpenTelemetry packages with known moderate-severity advisories
   (`npm audit`) — this is upstream in Netlify's own SDK, not fixable here without a breaking downgrade;
   worth re-checking when bumping `@netlify/blobs`.
+- An order's edit link (see "Editing an order after submission" above) locks the template in place — it
+  reopens the wizard directly rather than the category/carousel screens, so a couple can't switch templates
+  from there. Nothing enforces pricing for a post-deploy edit either; that's a manual call on your end (the
+  order's `revisionCount`/`lastEditedAt` fields are there if you want a signal for when to charge for one).
 
 ## Verification performed this phase
 
