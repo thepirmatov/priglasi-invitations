@@ -28,7 +28,11 @@ function slugify(str, orderId) {
     .map((ch) => (ch in CYRILLIC_MAP ? CYRILLIC_MAP[ch] : ch))
     .join('');
   const base = transliterated.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'invitation';
-  return `${base}-${orderId.slice(0, 6)}`;
+  // orderId is a short human-readable code (e.g. "7K9Q-XM3P", see
+  // generateOrderId in app.js), not the old raw UUID - strip its own dash and
+  // lowercase it so it stays a valid Netlify site-name fragment.
+  const idPart = orderId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toLowerCase();
+  return `${base}-${idPart}`;
 }
 
 async function buildDeployZip(templateId, config, orderId) {
@@ -137,7 +141,12 @@ exports.handler = async (event) => {
     return { statusCode: 403, body: '' };
   }
 
-  const { orderId, chatId, replyToMessageId } = JSON.parse(event.body || '{}');
+  // mode: 'redeploy' comes only from order-edit.js, for an order that's
+  // already `completed` - it pushes an edited config live by deploying to
+  // the *same* site (see below) instead of the normal pending->completed
+  // flow, so an edit never spends another Netlify site slot.
+  const { orderId, chatId, replyToMessageId, mode } = JSON.parse(event.body || '{}');
+  const isRedeploy = mode === 'redeploy';
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const netlifyToken = process.env.NETLIFY_AUTH_TOKEN;
   const store = getBlobStore('orders');
@@ -158,35 +167,62 @@ exports.handler = async (event) => {
     await sendTelegramMessage(botToken, chatId, replyToMessageId, `Буйрутма табылган жок: ${orderId}`);
     return { statusCode: 202, body: '' };
   }
-  // Both the Telegram /bashta path and the manual deploy-order script can reach
-  // this same function now, so this check - not either caller's own - is what
-  // actually prevents a duplicate trigger from deploying (and billing) the same
-  // order twice. Best-effort, not a strict guarantee (see checkRateLimit's same
-  // caveat in lib/security.js): a get-then-set race is still possible if two
-  // triggers land within milliseconds of each other, just very unlikely here.
-  if (order.status !== 'pending') {
-    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Бул буйрутма мурда иштелген (status: ${order.status}).`);
-    return { statusCode: 202, body: '' };
-  }
-  try {
-    await store.setJSON(orderId, { ...order, status: 'in_progress' });
-  } catch (err) {
-    console.error('deploy-site-background: failed to mark order in_progress:', err);
-    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: буйрутманын статусун жаңыртып болбоду (${err.message}).`);
-    return { statusCode: 202, body: '' };
+  if (isRedeploy) {
+    if (order.status !== 'completed' || !order.siteId) {
+      console.error(`deploy-site-background: redeploy requested for order ${orderId} with status ${order.status}`);
+      // order.siteId is only missing for an order deployed before this
+      // feature existed - nothing to redeploy in place, so the manager needs
+      // to know rather than the edit silently going nowhere.
+      await sendTelegramMessage(
+        botToken,
+        chatId,
+        replyToMessageId,
+        `Буйрутма ${orderId} онлайн кайра жайгаштырууга жарабайт (эски буйрутма). Кол менен /bashta же scripts/deploy-order.js колдонуңуз.`
+      );
+      return { statusCode: 202, body: '' };
+    }
+  } else {
+    // Both the Telegram /bashta path and the manual deploy-order script can reach
+    // this same function now, so this check - not either caller's own - is what
+    // actually prevents a duplicate trigger from deploying (and billing) the same
+    // order twice. Best-effort, not a strict guarantee (see checkRateLimit's same
+    // caveat in lib/security.js): a get-then-set race is still possible if two
+    // triggers land within milliseconds of each other, just very unlikely here.
+    if (order.status !== 'pending') {
+      await sendTelegramMessage(botToken, chatId, replyToMessageId, `Бул буйрутма мурда иштелген (status: ${order.status}).`);
+      return { statusCode: 202, body: '' };
+    }
+    try {
+      await store.setJSON(orderId, { ...order, status: 'in_progress' });
+    } catch (err) {
+      console.error('deploy-site-background: failed to mark order in_progress:', err);
+      await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: буйрутманын статусун жаңыртып болбоду (${err.message}).`);
+      return { statusCode: 202, body: '' };
+    }
   }
 
   try {
     const zipBuffer = await buildDeployZip(order.templateId, order.config, orderId);
-    const slug = slugify(order.config.coupleNames, orderId);
-    const site = await createNetlifySite(netlifyToken, slug);
-    await deployToSite(netlifyToken, site.id, zipBuffer);
 
-    let sheet = null;
-    try {
-      sheet = await createRsvpSheet(order.config.coupleNames, orderId);
-    } catch (err) {
-      console.error('RSVP sheet creation failed (site deploy still succeeded):', err);
+    let site;
+    if (isRedeploy) {
+      await deployToSite(netlifyToken, order.siteId, zipBuffer);
+      site = { id: order.siteId, ssl_url: order.siteUrl };
+    } else {
+      const slug = slugify(order.config.coupleNames, orderId);
+      site = await createNetlifySite(netlifyToken, slug);
+      await deployToSite(netlifyToken, site.id, zipBuffer);
+    }
+
+    // A redeploy keeps the same RSVP sheet (already shared with the couple -
+    // creating a new one would silently orphan every RSVP submitted so far).
+    let sheet = isRedeploy ? { sheetId: order.sheetId, sheetUrl: order.sheetUrl } : null;
+    if (!isRedeploy) {
+      try {
+        sheet = await createRsvpSheet(order.config.coupleNames, orderId);
+      } catch (err) {
+        console.error('RSVP sheet creation failed (site deploy still succeeded):', err);
+      }
     }
 
     const siteUrl = site.ssl_url || site.url;
@@ -194,20 +230,40 @@ exports.handler = async (event) => {
       ...order,
       status: 'completed',
       siteUrl,
+      siteId: site.id,
       sheetId: sheet && sheet.sheetId,
       sheetUrl: sheet && sheet.sheetUrl,
-      completedAt: new Date().toISOString(),
+      completedAt: isRedeploy ? order.completedAt : new Date().toISOString(),
+      revisionCount: isRedeploy ? (order.revisionCount || 0) + 1 : (order.revisionCount || 0),
+      lastRedeployedAt: isRedeploy ? new Date().toISOString() : order.lastRedeployedAt,
     });
-    await sendTelegramMessage(
-      botToken,
-      chatId,
-      replyToMessageId,
-      `Даяр! ${siteUrl}${sheet ? `\nRSVP таблица: ${sheet.sheetUrl}` : ''}`
-    );
+
+    if (isRedeploy) {
+      await sendTelegramMessage(
+        botToken,
+        chatId,
+        replyToMessageId,
+        `Буйрутма кайра жайгаштырылды: ${siteUrl}${sheet && sheet.sheetUrl ? `\nRSVP таблица: ${sheet.sheetUrl}` : ''}\n#ORD_${orderId}`
+      );
+    } else {
+      const editUrl = `${process.env.URL}/storefront/?orderId=${orderId}`;
+      await sendTelegramMessage(
+        botToken,
+        chatId,
+        replyToMessageId,
+        `Даяр! ${siteUrl}${sheet ? `\nRSVP таблица: ${sheet.sheetUrl}` : ''}\nЧоңдоо шилтемеси (кардарга жиберүү үчүн): ${editUrl}`
+      );
+    }
   } catch (err) {
     console.error(err);
-    await store.setJSON(orderId, { ...order, status: 'pending' });
-    await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: ${err.message}\nКайра аракет кылуу үчүн /bashta жазыңыз же scripts/deploy-order.js.`);
+    if (isRedeploy) {
+      // The site that was live before this redeploy attempt is untouched -
+      // nothing to roll back, just let the manager know the edit didn't land.
+      await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти (кайра жайгаштыруу): ${err.message}\n#ORD_${orderId}`);
+    } else {
+      await store.setJSON(orderId, { ...order, status: 'pending' });
+      await sendTelegramMessage(botToken, chatId, replyToMessageId, `Ката кетти: ${err.message}\nКайра аракет кылуу үчүн /bashta жазыңыз же scripts/deploy-order.js.`);
+    }
   }
 
   return { statusCode: 202, body: '' };

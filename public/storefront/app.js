@@ -35,7 +35,24 @@ const state = {
   schedule: [{ time: '', label: '' }],
   collagePhotos: [],
   previewReady: false,
+  editMode: false,
+  editOrderId: null,
 };
+
+// Short, easy to read aloud/type order id (e.g. "7K9Q-XM3P") - replaces
+// crypto.randomUUID() so a manager/couple can actually reference an order in
+// conversation. No 0/O/1/I/L (easily confused when spoken or handwritten).
+// 8 chars from this 32-symbol alphabet is ~40 bits - far more than enough to
+// stay unguessable against realistic brute-forcing (order-view.js, rsvp.js
+// and the edit link all rely on the id itself being the only access check),
+// while staying far shorter than a full UUID.
+const ORDER_ID_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+function generateOrderId() {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  const chars = Array.from(bytes, (b) => ORDER_ID_ALPHABET[b % ORDER_ID_ALPHABET.length]);
+  return `${chars.slice(0, 4).join('')}-${chars.slice(4).join('')}`;
+}
 
 // Resizes+recompresses an uploaded photo client-side (long edge capped at
 // maxDimension, re-encoded as JPEG) before turning it into a data URL. Keeps
@@ -646,7 +663,7 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
   submitButton.disabled = true;
   submitButton.textContent = 'Жөнөтүлүүдө...';
 
-  const orderId = crypto.randomUUID();
+  const orderId = state.editMode ? state.editOrderId : generateOrderId();
   const submittedConfig = currentConfig();
   const defaults = state.selectedTemplateDefaults || {};
   // The field was pre-filled with the template's own demo photo so the
@@ -666,6 +683,10 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
       name: document.getElementById('field-customerName').value,
       contact: document.getElementById('field-customerContact').value,
     },
+    // Raw per-field snapshot (not just the computed config above) - lets a
+    // later visit to this same order's edit link pre-fill the wizard exactly
+    // like resuming a local draft does (see applyWizardFields/restoreDraft).
+    draft: buildDraftSnapshot(),
   };
 
   const body = JSON.stringify(payload);
@@ -676,27 +697,36 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
     return;
   }
 
+  const endpoint = state.editMode ? 'order-edit' : 'order';
+
   try {
-    const res = await fetch(`${FUNCTIONS_ORIGIN}/.netlify/functions/order`, {
+    const res = await fetch(`${FUNCTIONS_ORIGIN}/.netlify/functions/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
     });
     if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-    // whatsappUrl is only present when MANAGER_WHATSAPP_NUMBER is configured
-    // server-side (see order.js) - the Telegram-only default omits it.
-    const { whatsappUrl } = await res.json();
     document.getElementById('confirmation-order-id').textContent = orderId;
     const whatsappLink = document.getElementById('confirmation-whatsapp-link');
-    if (whatsappUrl) {
-      whatsappLink.href = whatsappUrl;
-      whatsappLink.classList.remove('hidden');
-      document.getElementById('confirmation-message').textContent =
-        'Буйрутмаңыз сакталды. Төлөмдү тактоо жана чакырууну даярдоо үчүн менеджер менен WhatsApp аркылуу байланышыңыз.';
-    } else {
+
+    if (state.editMode) {
       whatsappLink.classList.add('hidden');
       document.getElementById('confirmation-message').textContent =
-        'Сиздин буйрутмаңыз жөнөтүлдү. Төлөмдү тактоо үчүн жакында сиз менен байланышабыз.';
+        'Өзгөртүүлөр сакталды. Сайт жаңырганча бир аз убакыт күтүңүз.';
+    } else {
+      // whatsappUrl is only present when MANAGER_WHATSAPP_NUMBER is configured
+      // server-side (see order.js) - the Telegram-only default omits it.
+      const { whatsappUrl } = await res.json();
+      if (whatsappUrl) {
+        whatsappLink.href = whatsappUrl;
+        whatsappLink.classList.remove('hidden');
+        document.getElementById('confirmation-message').textContent =
+          'Буйрутмаңыз сакталды. Төлөмдү тактоо жана чакырууну даярдоо үчүн менеджер менен WhatsApp аркылуу байланышыңыз.';
+      } else {
+        whatsappLink.classList.add('hidden');
+        document.getElementById('confirmation-message').textContent =
+          'Сиздин буйрутмаңыз жөнөтүлдү. Төлөмдү тактоо үчүн жакында сиз менен байланышабыз.';
+      }
     }
     window.WizardPersist.clearDraft();
     showScreen('confirmation');
@@ -712,6 +742,35 @@ document.getElementById('wizard-submit').addEventListener('click', async () => {
 
 function hideDraftBanner() {
   document.getElementById('draft-banner').classList.add('hidden');
+}
+
+// Shared by restoreDraft (a local draft, see persist.js) and loadOrderForEdit
+// (an already-submitted order's own saved draft snapshot) - both hand this
+// the same { schedule, collagePhotos, fields } shape built by
+// buildDraftSnapshot, just sourced differently.
+function applyWizardFields(draft) {
+  state.schedule = draft.schedule && draft.schedule.length ? draft.schedule : [{ time: '', label: '' }];
+  state.collagePhotos = draft.collagePhotos || [];
+  renderScheduleRows();
+  renderCollagePreviews();
+
+  const fields = draft.fields || {};
+  DRAFT_FIELD_IDS.forEach((id) => {
+    const el = document.getElementById(`field-${id}`);
+    if (el) el.value = fields[id] || '';
+  });
+  setHeroPhotoPreview(fields.heroPhotoUrl || '');
+  setMusicPreview(fields.musicUrl || '');
+}
+
+function startPreviewFrame(templateId) {
+  state.previewReady = false;
+  const frame = document.getElementById('preview-frame');
+  frame.onload = () => {
+    state.previewReady = true;
+    postPreviewUpdate();
+  };
+  frame.src = `../templates/${templateId}/index.html`;
 }
 
 async function restoreDraft(draft) {
@@ -742,30 +801,10 @@ async function restoreDraft(draft) {
     return;
   }
 
-  state.schedule = draft.schedule && draft.schedule.length ? draft.schedule : [{ time: '', label: '' }];
-  state.collagePhotos = draft.collagePhotos || [];
-  renderScheduleRows();
-  renderCollagePreviews();
-
-  const fields = draft.fields || {};
-  DRAFT_FIELD_IDS.forEach((id) => {
-    const el = document.getElementById(`field-${id}`);
-    if (el) el.value = fields[id] || '';
-  });
-  setHeroPhotoPreview(fields.heroPhotoUrl || '');
-  setMusicPreview(fields.musicUrl || '');
-
+  applyWizardFields(draft);
   state.currentStep = draft.currentStep || 0;
   updateWizardStep();
-
-  state.previewReady = false;
-  const frame = document.getElementById('preview-frame');
-  frame.onload = () => {
-    state.previewReady = true;
-    postPreviewUpdate();
-  };
-  frame.src = `../templates/${draft.selectedTemplateId}/index.html`;
-
+  startPreviewFrame(draft.selectedTemplateId);
   showScreen('wizard');
 }
 
@@ -786,4 +825,60 @@ async function tryRestoreDraft() {
   );
 }
 
-tryRestoreDraft();
+// --- Editing an already-submitted order via its own private link
+// (?orderId=xxx, see order-edit.js and the edit link the manager gets after
+// a deploy completes in deploy-site-background.js) ---
+
+async function loadOrderForEdit(orderId) {
+  const res = await fetch(`${FUNCTIONS_ORIGIN}/.netlify/functions/order-edit?orderId=${encodeURIComponent(orderId)}`);
+  if (!res.ok) {
+    const messages = {
+      404: 'Буйрутма табылган жок же аны онлайн түзөтүү мүмкүн эмес.',
+      409: 'Буйрутма азырынча даярдалууда, бир аздан кийин кайра аракет кылыңыз.',
+    };
+    alert(messages[res.status] || 'Буйрутманы жүктөп болбоду.');
+    return false;
+  }
+  const data = await res.json();
+
+  state.category = data.category;
+  await loadCarousel();
+  if (!state.templatesInCategory.some((t) => t.id === data.templateId)) {
+    alert('Бул шаблон азыр жеткиликсиз.');
+    return false;
+  }
+  state.selectedTemplateId = data.templateId;
+
+  const configRes = await fetch(`../templates/${data.templateId}/config.example.json`);
+  if (!configRes.ok) throw new Error('Template config missing');
+  state.selectedTemplateDefaults = await configRes.json();
+
+  applyWizardFields(data.draft);
+  state.currentStep = 0;
+  updateWizardStep();
+  startPreviewFrame(data.templateId);
+  showScreen('wizard');
+
+  // Set only after everything above succeeds - a failed load must not leave
+  // the wizard thinking it's editing an order it never actually loaded.
+  state.editMode = true;
+  state.editOrderId = orderId;
+  return true;
+}
+
+async function tryLoadOrderForEdit() {
+  const orderId = new URLSearchParams(location.search).get('orderId');
+  if (!orderId) return false;
+  try {
+    return await loadOrderForEdit(orderId);
+  } catch (err) {
+    console.error('Failed to load order for editing:', err);
+    alert('Буйрутманы жүктөп болбоду.');
+    return false;
+  }
+}
+
+(async () => {
+  const editing = await tryLoadOrderForEdit();
+  if (!editing) tryRestoreDraft();
+})();

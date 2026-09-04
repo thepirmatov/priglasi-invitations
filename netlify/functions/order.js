@@ -1,10 +1,10 @@
 const { getBlobStore } = require('./lib/blobs');
-const { getClientIp, checkRateLimit, isAllowedOrigin, getCorsHeaders, isSafeImageUrl, isSafeAudioUrl } = require('./lib/security');
+const { getClientIp, checkRateLimit, isAllowedOrigin, getCorsHeaders } = require('./lib/security');
+const { validateOrderPayload } = require('./lib/orderValidation');
 
 // Mirrors the client-side cap in public/storefront/app.js - a direct API call
 // bypasses that check, so it's enforced again here.
 const MAX_PAYLOAD_BYTES = 5.5 * 1024 * 1024;
-const MAX_COLLAGE_PHOTOS = 15;
 
 // Unset (default) means the storefront and this function are still on the
 // same Netlify site, so same-origin alone covers it - isAllowedOrigin/
@@ -13,39 +13,7 @@ const MAX_COLLAGE_PHOTOS = 15;
 // its own host (see README) - no other change needed at that point.
 const ALLOWED_DOMAINS = process.env.STOREFRONT_ORIGIN ? [process.env.STOREFRONT_ORIGIN] : [];
 
-function validate(payload) {
-  const required = [
-    ['orderId', payload.orderId],
-    ['templateId', payload.templateId],
-    ['category', payload.category],
-    ['config.coupleNames', payload.config && payload.config.coupleNames],
-    ['config.date', payload.config && payload.config.date],
-    ['config.venueName', payload.config && payload.config.venueName],
-    ['customer.name', payload.customer && payload.customer.name],
-    ['customer.contact', payload.customer && payload.customer.contact],
-  ];
-  const missing = required.filter(([, value]) => !value).map(([field]) => field);
-
-  const config = payload.config || {};
-  const invalid = [];
-  if (config.heroPhotoUrl && !isSafeImageUrl(config.heroPhotoUrl)) {
-    invalid.push('config.heroPhotoUrl');
-  }
-  if (config.collagePhotos !== undefined) {
-    if (!Array.isArray(config.collagePhotos) || config.collagePhotos.length > MAX_COLLAGE_PHOTOS) {
-      invalid.push('config.collagePhotos');
-    } else if (!config.collagePhotos.every(isSafeImageUrl)) {
-      invalid.push('config.collagePhotos');
-    }
-  }
-  if (config.musicUrl && !isSafeAudioUrl(config.musicUrl)) {
-    invalid.push('config.musicUrl');
-  }
-
-  return { missing, invalid };
-}
-
-function formatOrderMessage(payload, orderViewUrl) {
+function formatOrderMessage(payload, orderViewUrl, editUrl) {
   const { orderId, templateId, config, customer } = payload;
   return [
     'Жаңы буйрутма',
@@ -57,6 +25,9 @@ function formatOrderMessage(payload, orderViewUrl) {
     `Кардар: ${customer.name} (${customer.contact})`,
     '',
     `Толук маалымат жана сүрөттөр: ${orderViewUrl}`,
+    // Works even before this order is deployed - order-edit.js just updates
+    // the stored config in place until then (see there).
+    `Чоңдоо шилтемеси (кардарга жиберүү үчүн): ${editUrl}`,
     '',
     `#ORD_${orderId}`,
   ].join('\n');
@@ -124,7 +95,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Invalid JSON body' }) };
   }
 
-  const { missing, invalid } = validate(payload);
+  const { missing, invalid } = validateOrderPayload(payload);
   if (missing.length > 0) {
     return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Missing required fields', missing }) };
   }
@@ -151,6 +122,7 @@ exports.handler = async (event) => {
   });
 
   const orderViewUrl = `${process.env.URL}/.netlify/functions/order-view?orderId=${payload.orderId}`;
+  const editUrl = `${process.env.URL}/storefront/?orderId=${payload.orderId}`;
 
   if (managerWhatsAppNumber) {
     const whatsappUrl = buildWhatsAppUrl(managerWhatsAppNumber, formatWhatsAppMessage(payload, orderViewUrl));
@@ -159,7 +131,7 @@ exports.handler = async (event) => {
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: managerChatId, text: formatOrderMessage(payload, orderViewUrl) }),
+          body: JSON.stringify({ chat_id: managerChatId, text: formatOrderMessage(payload, orderViewUrl, editUrl) }),
         });
       } catch (err) {
         console.error('Telegram backup notification failed:', err);
@@ -171,7 +143,7 @@ exports.handler = async (event) => {
   const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: managerChatId, text: formatOrderMessage(payload, orderViewUrl) }),
+    body: JSON.stringify({ chat_id: managerChatId, text: formatOrderMessage(payload, orderViewUrl, editUrl) }),
   });
   if (!telegramResponse.ok) {
     const errorBody = await telegramResponse.text();
